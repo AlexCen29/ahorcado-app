@@ -1,18 +1,23 @@
 <template>
     <!--nabbar-->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand game-title text-white" href="#">Juego del Ahorcado</a>
-            <div class="d-flex">
-                <button class="btn btn-settings rounded-circle me-2">
-                    <i class="bi bi-gear-fill"></i>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+    
+                <button class="btn btn-logout" @click="LogOut()">
+                    <i class="bi bi-box-arrow-right me-2"></i>Salir
                 </button>
-                <button class="btn btn-logout rounded-circle">
-                    <i class="bi bi-box-arrow-right"></i>
+
+                <h1 class="navbar-brand game-title text-white" href="#">Juego del Ahorcado</h1>
+    
+                <button class="btn btn-settings" @click="Config()">
+                    <i class="bi bi-gear-fill me-2"></i>Ajustes
                 </button>
+    
             </div>
-        </div>
-    </nav>
+        </nav>
+
+    </header>
 
     <section class="container-fluid py-4">
         <div class="row">
@@ -94,49 +99,49 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">4</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">4</span>
                                     <span>PalabraSecreta</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">5400</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">5</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">5</span>
                                     <span>AhorcadoMaster</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">4900</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">6</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">6</span>
                                     <span>SuperGamer</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">3750</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">7</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">7</span>
                                     <span>GanadorLetras</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">3200</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">8</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">8</span>
                                     <span>AdivinaTodo</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">2900</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">9</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">9</span>
                                     <span>MasterWord</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">2500</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
-                                    <span class="badge rounded-pill me-2 rank-badge">10</span>
+                                    <span class="badge rounded-pill me-2 rank-badge out-rack">10</span>
                                     <span>SalvadoDelAhorcado</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">2100</span>
@@ -154,13 +159,28 @@
 
 <script>
 export default {
-    name: 'GameView'
+    name: 'GameView',
+    data() {
+        return {
+            palabra: 'AHORCADO',
+            
+        }
+    },
+    methods: {
+        Config() {
+            this.$router.push("/admin");
+        },
+
+        LogOut() {
+            this.$router.push("/login");
+        }
+        
+    }
 }
 </script>
 
 <style scoped>
 .game-title {
-    font-family: 'Roboto Serif', serif;
     font-size: 32px;
     font-weight: bold;
     color: #000000;
@@ -171,37 +191,38 @@ export default {
 }
 
 .btn-settings {
-    width: 48px;
-    height: 48px;
     background-color: #58C0EB;
     color: white;
     border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
     transition: all 0.3s ease;
 }
 
 .btn-settings:hover {
     background-color: #4BA3CE;
-    transform: rotate(30deg);
+    transform: translateY(-2px);
 }
 
 .btn-logout {
-    width: 48px;
-    height: 48px;
+
     background-color: #E74C3C;
     color: white;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
 }
 
 .btn-logout:hover {
     background-color: #C0392B;
-    transform: rotate(-30deg);
+transform: translateY(-2px);
 }
 
 .game-container {
@@ -297,8 +318,13 @@ export default {
 }
 
 .rank-3 {
-    background-color: #E55934;
+    background-color: #FA7921;
     color: white;
+}
+
+.out-rack {
+    background-color: #F0F0F0;
+    color: #000;
 }
 
 .list-group-item {

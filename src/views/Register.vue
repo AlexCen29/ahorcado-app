@@ -62,7 +62,14 @@
 
 <script>
 export default {
-    name: 'RegisterView'
+    name: 'RegisterView',
+    data() {
+        return {
+            newUsername: '',
+            email: '',
+            newPassword: ''
+        }
+    },
 }
 </script>
 
