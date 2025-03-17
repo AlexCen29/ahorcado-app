@@ -6,12 +6,11 @@
 
 <style scoped>
 .animated-bg {
-  width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(-45deg, #5BC0EB, #FDE74C, #9BC53D, #E55934, #FA7921);
   background-size: 400% 400%;
   animation: gradientAnimation 10s ease infinite;
-  position: absolute;
+display: flex;  flex-direction: column;
   top: 0;
   left: 0;
 }

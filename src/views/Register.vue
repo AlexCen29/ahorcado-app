@@ -74,7 +74,7 @@ export default {
 
 .card-header {
     background-color: #FA7921 !important;
-    font-family: 'Roboto', sans-serif;
+    
 }
 
 .card-body {
@@ -84,7 +84,7 @@ export default {
 .btn-danger {
     background-color: #E55934 !important;
     border-color: #E55934 !important;
-    font-family: 'Roboto', sans-serif;
+    
     font-weight: bold;
     transition: all 0.3s ease;
 }
@@ -97,7 +97,7 @@ export default {
 .form-control,
 .input-group-text {
     border-radius: 10px;
-    font-family: 'Roboto', sans-serif;
+    
 }
 
 .form-control:focus {
@@ -106,13 +106,13 @@ export default {
 }
 
 input::placeholder {
-    font-family: 'Roboto', sans-serif;
+    
     font-style: italic;
     opacity: 0.7;
 }
 
 label {
-    font-family: 'Roboto', sans-serif;
+    
     font-weight: bold;
 }
 </style>
