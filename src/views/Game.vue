@@ -2,7 +2,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid d-flex justify-content-between align-items-center">
-                <button class="btn btn-logout" @click="LogOut()">
+                <button class="btn btn-logout" @click="LogOut">
                     <i class="bi bi-box-arrow-right me-2"></i>Salir
                 </button>
 
@@ -12,7 +12,7 @@
                     <span v-if="difficultySelected" class="difficulty-badge" :class="difficultyClass">
                         {{ difficultyText }}
                     </span>
-                    <button class="btn btn-settings ms-2" @click="Config()">
+                    <button class="btn btn-settings ms-2" @click="Config">
                         <i class="bi bi-gear-fill me-2"></i>Ajustes
                     </button>
                 </div>
@@ -23,73 +23,58 @@
     <section class="container-fluid py-4">
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <!--selector de dificulltad-->
                 <div v-if="!difficultySelected" class="card shadow-lg difficulty-selector">
                     <div class="card-body text-center">
                         <h2 class="card-title mb-4">Selecciona la Dificultad</h2>
                         <p class="mb-4">Elige el nivel de dificultad para comenzar el juego</p>
-
                         <div class="row justify-content-center g-4">
                             <div class="col-md-4">
                                 <button @click="selectDifficulty('easy')" class="btn-difficulty btn-easy">
-                                    <i class="bi bi-emoji-expressionless me-2"></i>
-                                    Fácil
+                                    <i class="bi bi-emoji-expressionless me-2"></i> Fácil
                                 </button>
                             </div>
                             <div class="col-md-4">
                                 <button @click="selectDifficulty('medium')" class="btn-difficulty btn-medium">
-                                    <i class="bi bi-emoji-astonished me-2"></i>
-                                    Medio
+                                    <i class="bi bi-emoji-astonished me-2"></i> Medio
                                 </button>
                             </div>
                             <div class="col-md-4">
                                 <button @click="selectDifficulty('hard')" class="btn-difficulty btn-hard">
-                                    <i class="bi bi-emoji-dizzy me-2"></i>
-                                    Difícil
+                                    <i class="bi bi-emoji-angry me-2"></i> Difícil
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!--juego del ahorcado-->
                 <div v-else class="game-container card shadow-lg">
                     <div class="card-body">
                         <div class="hangman-image-container text-center mb-4">
-                            <img src="@/assets/img/image.png" alt="Ahorcado" class="hangman-image img-fluid" />
+                            <img :src="hangmanImage" alt="Ahorcado" class="hangman-image img-fluid" />
                         </div>
-
                         <div class="word-container text-center mb-5">
                             <div class="letter-spaces d-flex justify-content-center">
-                                <div class="letter-space mx-2" v-for="n in 7" :key="n">
-                                    <span class="letter-placeholder"></span>
+                                <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
+                                    <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter : '' }}</span>
                                 </div>
                             </div>
                         </div>
-
                         <div class="keyboard-container text-center">
-                            <div class="row justify-content-center g-1">
-                                <div class="col-auto" v-for="letter in 'QWERTYUIOP'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
+                            <div v-for="(row, rowIndex) in keyboard" :key="rowIndex" class="row justify-content-center g-1">
+                                <div class="col-auto" v-for="letter in row" :key="letter">
+                                    <button class="key-button" :class="{ 'incorrect': incorrectLetters.includes(letter) }"
+                                        :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
+                                        {{ letter }}
+                                    </button>
                                 </div>
                             </div>
-
-                            <div class="row justify-content-center g-1 mt-2">
-                                <div class="col-auto" v-for="letter in 'ASDFGHJKLÑ'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
-                                </div>
-                            </div>
-
-                            <div class="row justify-content-center g-1 mt-2">
-                                <div class="col-auto" v-for="letter in 'ZXCVBNM'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
-                                </div>
-                            </div>
+                        </div>
+                        <div v-if="gameOver" class="text-center mt-4">
+                            <h2>{{ message }}</h2>
+                            <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-4">
                 <Ranking />
             </div>
@@ -97,52 +82,88 @@
     </section>
 </template>
 
-<script>
-import Ranking from "@/components/Ranking.vue";
+<script setup>
+import Ranking from '@/components/Ranking.vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
-export default {
-    name: "GameView",
-    components: {
-        Ranking
-    },
-    data() {
-        return {
-            difficultySelected: false,
-            difficulty: '',
-            difficultyText: '',
-            difficultyClass: ''
-        };
-    },
-    methods: {
-        selectDifficulty(level) {
-            this.difficulty = level;
-            this.difficultySelected = true;
+const router = useRouter();
+const incorrectLetters = ref([]);
+const words = ref({
+    easy: ["VUE", "CSS", "HTML", "PHP"],
+    medium: ["JAVASCRIPT", "LARAVEL", "PYTHON", "MYSQL"],
+    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP", "SASS"]
+});
+const selectedWord = ref("");
+const wordArray = ref([]);
+const guessedLetters = ref([]);
+const selectedLetters = ref([]);
+const mistakes = ref(0);
+const maxMistakes = ref(6);
+const gameOver = ref(false);
+const message = ref("");
+const difficultySelected = ref(false);
+const difficulty = ref("");
+const keyboard = ref(['QWERTYUIOP', 'ASDFGHJKLÑ', 'ZXCVBNM']);
 
-            if (level === 'easy') {
-                this.difficultyText = 'Fácil';
-                this.difficultyClass = 'difficulty-easy';
-            } else if (level === 'medium') {
-                this.difficultyText = 'Medio';
-                this.difficultyClass = 'difficulty-medium';
-            } else {
-                this.difficultyText = 'Difícil';
-                this.difficultyClass = 'difficulty-hard';
-            }
-        },
-        Config() {
-            this.$router.push("/admin");
-        },
-        LogOut() {
-            this.$router.push("/login");
-        },
-        changeDifficulty() {
-            this.difficultySelected = false;
-        }
+const difficultyText = computed(() => {
+    return difficulty.value === 'easy' ? 'Fácil' : difficulty.value === 'medium' ? 'Medio' : 'Difícil';
+});
+const difficultyClass = computed(() => {
+    return difficulty.value === 'easy' ? 'badge-easy' : difficulty.value === 'medium' ? 'badge-medium' : 'badge-hard';
+});
+const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
+
+const Config = () => router.push("/admin");
+const LogOut = () => router.push("/login");
+
+const selectLetter = (letter) => {
+    if (gameOver.value || selectedLetters.value.includes(letter)) return;
+    selectedLetters.value.push(letter);
+    if (wordArray.value.includes(letter)) {
+        guessedLetters.value.push(letter);
+    } else {
+        mistakes.value++;
+        incorrectLetters.value.push(letter);
+    }
+    checkGameStatus();
+};
+
+const checkGameStatus = () => {
+    if (mistakes.value >= maxMistakes.value) {
+        gameOver.value = true;
+        message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
+    } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter))) {
+        gameOver.value = true;
+        message.value = "¡Ganaste! Felicidades 🎉";
     }
 };
+
+const selectDifficulty = (level) => {
+    difficulty.value = level;
+    difficultySelected.value = true;
+    resetGame();
+};
+
+const resetGame = () => {
+    selectedWord.value = words.value[difficulty.value][Math.floor(Math.random() * words.value[difficulty.value].length)];
+    wordArray.value = selectedWord.value.split("");
+    guessedLetters.value = [];
+    selectedLetters.value = [];
+    incorrectLetters.value = [];
+    mistakes.value = 0;
+    gameOver.value = false;
+    message.value = "";
+};
+
+onMounted(() =>{});
 </script>
 
 <style scoped>
+.key-button.incorrect{
+    background-color: #E74C3C !important;
+}
+
 .game-title {
     font-size: 32px;
     font-weight: bold;
