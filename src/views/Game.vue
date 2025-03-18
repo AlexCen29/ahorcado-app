@@ -2,13 +2,13 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid d-flex justify-content-between align-items-center">
-                <button class="btn btn-logout" @click="LogOut()">
+                <button class="btn btn-logout" @click="LogOut">
                     <i class="bi bi-box-arrow-right me-2"></i>Salir
                 </button>
 
                 <h1 class="navbar-brand game-title text-white">Juego del Ahorcado</h1>
 
-                <button class="btn btn-settings" @click="Config()">
+                <button class="btn btn-settings" @click="Config">
                     <i class="bi bi-gear-fill me-2"></i>Ajustes
                 </button>
             </div>
@@ -21,13 +21,14 @@
                 <div class="game-container card shadow-lg">
                     <div class="card-body">
                         <div class="hangman-image-container text-center mb-4">
-                            <img src="@/assets/img/image.png" alt="Ahorcado" class="hangman-image img-fluid" />
+                            <img :src="hangmanImage" alt="Ahorcado" class="hangman-image img-fluid" />
                         </div>
 
                         <div class="word-container text-center mb-5">
                             <div class="letter-spaces d-flex justify-content-center">
-                                <div class="letter-space mx-2" v-for="n in 7" :key="n">
-                                    <span class="letter-placeholder"></span>
+                                <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
+                                    <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter : ''
+                                        }}</span>
                                 </div>
                             </div>
                         </div>
@@ -35,54 +36,124 @@
                         <div class="keyboard-container text-center">
                             <div class="row justify-content-center g-1">
                                 <div class="col-auto" v-for="letter in 'QWERTYUIOP'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
+                                    <button class="key-button"
+                                        :class="{ 'incorrect': incorrectLetters.includes(letter) }"
+                                        :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
+                                        {{ letter }}
+                                    </button>
+
                                 </div>
                             </div>
 
                             <div class="row justify-content-center g-1 mt-2">
                                 <div class="col-auto" v-for="letter in 'ASDFGHJKLÑ'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
+                                    <button class="key-button"
+                                        :class="{ 'incorrect': incorrectLetters.includes(letter) }"
+                                        :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
+                                        {{ letter }}
+                                    </button>
+
                                 </div>
                             </div>
 
                             <div class="row justify-content-center g-1 mt-2">
                                 <div class="col-auto" v-for="letter in 'ZXCVBNM'" :key="letter">
-                                    <button class="key-button">{{ letter }}</button>
+                                    <button class="key-button"
+                                        :class="{ 'incorrect': incorrectLetters.includes(letter) }"
+                                        :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
+                                        {{ letter }}
+                                    </button>
+
                                 </div>
                             </div>
                         </div>
 
+                        <div v-if="gameOver" class="text-center mt-4">
+                            <h2>{{ message }}</h2>
+                            <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-lg-4">
-                <Ranking />
             </div>
         </div>
     </section>
 </template>
 
-<script>
-import Ranking from "@/components/Ranking.vue";
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
-export default {
-    name: "GameView",
-    components: {
-        Ranking
-    },
-    methods: {
-        Config() {
-            this.$router.push("/admin");
-        },
-        LogOut() {
-            this.$router.push("/login");
-        }
+const router = useRouter();
+
+const incorrectLetters = ref([]);
+
+const words = ref(["VUEJS", "JAVASCRIPT", "LARAVEL", "PYTHON", "MONGODB", "GOLANG", "MYSQL", "SQLSERVER", "NODEJS", "REACTJS", "ANGULAR", "VITE", "TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP", "SASS"]);
+const selectedWord = ref("");
+const wordArray = ref([]);
+const guessedLetters = ref([]);
+const selectedLetters = ref([]);
+const mistakes = ref(0);
+const maxMistakes = ref(6);
+const gameOver = ref(false);
+const message = ref("");
+
+const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
+
+const Config = () => {
+    router.push("/admin");
+};
+
+const LogOut = () => {
+    router.push("/login");
+};
+
+const selectLetter = (letter) => {
+    if (gameOver.value || selectedLetters.value.includes(letter)) return;
+
+    selectedLetters.value.push(letter);
+
+    if (wordArray.value.includes(letter)) {
+        guessedLetters.value.push(letter);
+    } else {
+        mistakes.value++;
+        incorrectLetters.value.push(letter);
+    }
+
+    checkGameStatus();
+};
+
+const checkGameStatus = () => {
+    if (mistakes.value >= maxMistakes.value) {
+        gameOver.value = true;
+        message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
+    } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter))) {
+        gameOver.value = true;
+        message.value = "¡Ganaste! Felicidades 🎉";
     }
 };
+
+const resetGame = () => {
+    selectedWord.value = words.value[Math.floor(Math.random() * words.value.length)];
+    wordArray.value = selectedWord.value.split("");
+    guessedLetters.value = [];
+    selectedLetters.value = [];
+    incorrectLetters.value = [];
+    mistakes.value = 0;
+    gameOver.value = false;
+    message.value = "";
+};
+
+onMounted(() => {
+    resetGame();
+});
 </script>
 
 <style scoped>
+.key-button.incorrect {
+    background-color: #6d6d6d;
+    color: white !important;
+}
+
 .game-title {
     font-size: 32px;
     font-weight: bold;
@@ -138,12 +209,6 @@ export default {
     margin: 0 auto;
 }
 
-.letter-spaces {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
-}
-
 .letter-space {
     width: 40px;
     height: 40px;
@@ -171,7 +236,6 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease-in-out;
 }
 
