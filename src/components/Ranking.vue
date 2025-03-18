@@ -2,8 +2,7 @@
     <div class="leaderboard-container card shadow-lg">
         <div class="card-header text-center">
             <h3 class="mb-0">
-                <i class="bi bi-trophy-fill"></i>
-                Ranking
+                <i class="bi bi-trophy-fill">Ranking</i>
             </h3>
         </div>
         <div class="card-body p-0">
