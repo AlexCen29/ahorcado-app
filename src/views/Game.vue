@@ -72,14 +72,18 @@
                             <h2>{{ message }}</h2>
                             <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
                         </div>
-                    </div>
-                </div>
+                    </div>                    
+                </div>                
+            </div>
+            <div class="col-lg-4">
+                <Ranking />
             </div>
         </div>
     </section>
 </template>
 
 <script setup>
+import Ranking from '@/components/Ranking.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
