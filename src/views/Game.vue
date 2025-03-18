@@ -8,9 +8,14 @@
 
                 <h1 class="navbar-brand game-title text-white">Juego del Ahorcado</h1>
 
-                <button class="btn btn-settings" @click="Config()">
-                    <i class="bi bi-gear-fill me-2"></i>Ajustes
-                </button>
+                <div>
+                    <span v-if="difficultySelected" class="difficulty-badge" :class="difficultyClass">
+                        {{ difficultyText }}
+                    </span>
+                    <button class="btn btn-settings ms-2" @click="Config()">
+                        <i class="bi bi-gear-fill me-2"></i>Ajustes
+                    </button>
+                </div>
             </div>
         </nav>
     </header>
@@ -18,7 +23,37 @@
     <section class="container-fluid py-4">
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <div class="game-container card shadow-lg">
+                <!--selector de dificulltad-->
+                <div v-if="!difficultySelected" class="card shadow-lg difficulty-selector">
+                    <div class="card-body text-center">
+                        <h2 class="card-title mb-4">Selecciona la Dificultad</h2>
+                        <p class="mb-4">Elige el nivel de dificultad para comenzar el juego</p>
+
+                        <div class="row justify-content-center g-4">
+                            <div class="col-md-4">
+                                <button @click="selectDifficulty('easy')" class="btn-difficulty btn-easy">
+                                    <i class="bi bi-emoji-expressionless me-2"></i>
+                                    Fácil
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button @click="selectDifficulty('medium')" class="btn-difficulty btn-medium">
+                                    <i class="bi bi-emoji-astonished me-2"></i>
+                                    Medio
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button @click="selectDifficulty('hard')" class="btn-difficulty btn-hard">
+                                    <i class="bi bi-emoji-dizzy me-2"></i>
+                                    Difícil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--juego del ahorcado-->
+                <div v-else class="game-container card shadow-lg">
                     <div class="card-body">
                         <div class="hangman-image-container text-center mb-4">
                             <img src="@/assets/img/image.png" alt="Ahorcado" class="hangman-image img-fluid" />
@@ -51,7 +86,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -71,12 +105,38 @@ export default {
     components: {
         Ranking
     },
+    data() {
+        return {
+            difficultySelected: false,
+            difficulty: '',
+            difficultyText: '',
+            difficultyClass: ''
+        };
+    },
     methods: {
+        selectDifficulty(level) {
+            this.difficulty = level;
+            this.difficultySelected = true;
+
+            if (level === 'easy') {
+                this.difficultyText = 'Fácil';
+                this.difficultyClass = 'difficulty-easy';
+            } else if (level === 'medium') {
+                this.difficultyText = 'Medio';
+                this.difficultyClass = 'difficulty-medium';
+            } else {
+                this.difficultyText = 'Difícil';
+                this.difficultyClass = 'difficulty-hard';
+            }
+        },
         Config() {
             this.$router.push("/admin");
         },
         LogOut() {
             this.$router.push("/login");
+        },
+        changeDifficulty() {
+            this.difficultySelected = false;
         }
     }
 };
@@ -91,6 +151,71 @@ export default {
 
 .navbar {
     background-color: #FA7921 !important;
+}
+
+.difficulty-selector {
+    background-color: #FDE74C;
+    border-radius: 15px;
+    border: none;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.btn-difficulty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-easy {
+    background-color: #5cb85c;
+}
+
+.btn-medium {
+    background-color: #FA7921;
+}
+
+.btn-hard {
+    background-color: #E74C3C;
+}
+
+.btn-difficulty:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.difficulty-badge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.difficulty-easy {
+    background-color: #5cb85c;
+    color: white;
+}
+
+.difficulty-medium {
+    background-color: #FDE74C;
+    color: black;
+}
+
+.difficulty-hard {
+    background-color: #E74C3C;
+    color: white;
 }
 
 .btn-settings {

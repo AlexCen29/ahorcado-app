@@ -25,16 +25,21 @@ export default {
     data() {
         return {
             players: [
-                { name: "JugadorPro", score: 8500 },
-                { name: "AdivinaPalabras", score: 7200 },
-                { name: "LetraMaestra", score: 6800 },
+                { name: "MVilla", score: 8500 },
+                { name: "MenchoSoy", score: 7200 },
+                { name: "BenitoJ", score: 6800 },
                 { name: "PalabraSecreta", score: 5400 },
                 { name: "AhorcadoMaster", score: 4900 },
                 { name: "SuperGamer", score: 3750 },
                 { name: "GanadorLetras", score: 3200 },
                 { name: "AdivinaTodo", score: 2900 },
                 { name: "MasterWord", score: 2500 },
-                { name: "SalvadoDelAhorcado", score: 2100 }
+                { name: "SalvadoDelAhorcado", score: 2100 },
+                { name: "FariasElLentejas", score: 1800 },
+                { name: "AdivinaRapido", score: 1800 },
+         
+                { name: "PonsoBailarina", score: 100 }
+                
             ]
         };
     },
@@ -47,6 +52,9 @@ export default {
 </script>
 
 <style scoped>
+.card-header {
+    background-color: #9BC53D !important;
+}
 .rank-1 {
     background-color: gold;
     color: black;
