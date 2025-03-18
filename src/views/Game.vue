@@ -8,7 +8,7 @@
 
                 <h1 class="navbar-brand game-title text-white">Juego del Ahorcado</h1>
 
-                <div>
+                <div class="d-flex align-items-center">
                     <span v-if="difficultySelected" class="difficulty-badge" :class="difficultyClass">
                         {{ difficultyText }}
                     </span>
@@ -197,10 +197,12 @@ export default {
 }
 
 .difficulty-badge {
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-weight: bold;
-    font-size: 14px;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
 }
 
 .difficulty-easy {
