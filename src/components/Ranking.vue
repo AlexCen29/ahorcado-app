@@ -35,11 +35,7 @@ export default {
                 { name: "AdivinaTodo", score: 2900 },
                 { name: "MasterWord", score: 2500 },
                 { name: "SalvadoDelAhorcado", score: 2100 },
-                { name: "FariasElLentejas", score: 1800 },
-                { name: "AdivinaRapido", score: 1800 },
-         
-                { name: "PonsoBailarina", score: 100 }
-                
+                { name: "AdivinaRapido", score: 1800 },       
             ]
         };
     },

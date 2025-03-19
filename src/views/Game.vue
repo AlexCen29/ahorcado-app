@@ -51,6 +51,12 @@
                         <div class="hangman-image-container text-center mb-4">
                             <img :src="hangmanImage" alt="Ahorcado" class="hangman-image img-fluid" />
                         </div>
+                        <div v-if="gameOver">
+                            <dialog open>
+                                <p>{{ message }}</p>
+                                <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
+                            </dialog>
+                        </div>
                         <div class="word-container text-center mb-5">
                             <div class="letter-spaces d-flex justify-content-center">
                                 <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
@@ -61,17 +67,17 @@
                         <div class="keyboard-container text-center">
                             <div v-for="(row, rowIndex) in keyboard" :key="rowIndex" class="row justify-content-center g-1">
                                 <div class="col-auto" v-for="letter in row" :key="letter">
-                                    <button class="key-button" :class="{ 'incorrect': incorrectLetters.includes(letter) }"
+                                    <button class="key-button" :class="{ 'correct': guessedLetters.includes(letter), 'incorrect': incorrectLetters.includes(letter) }"
                                         :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
                                         {{ letter }}
                                     </button>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="gameOver" class="text-center mt-4">
+                        <!-- <div v-if="gameOver" class="text-center mt-4">
                             <h2>{{ message }}</h2>
                             <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -90,9 +96,9 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const incorrectLetters = ref([]);
 const words = ref({
-    easy: ["VUE", "CSS", "HTML", "PHP"],
+    easy: ["VUE", "CSS", "HTML", "PHP", "SASS"],
     medium: ["JAVASCRIPT", "LARAVEL", "PYTHON", "MYSQL"],
-    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP", "SASS"]
+    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP"]
 });
 const selectedWord = ref("");
 const wordArray = ref([]);
@@ -162,6 +168,12 @@ onMounted(() =>{});
 <style scoped>
 .key-button.incorrect{
     background-color: #E74C3C !important;
+    border: none;
+}
+
+.key-button.correct{
+    background-color: #5cb85c !important;
+    border: none;
 }
 
 .game-title {
