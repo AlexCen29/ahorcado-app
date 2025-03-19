@@ -141,7 +141,7 @@ const checkGameStatus = () => {
         message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
     } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter))) {
         gameOver.value = true;
-        message.value = "¡Ganaste! Felicidades 🎉";
+        message.value = "Felicidades, ¡Ganaste! 🎉";
     }
 };
 
@@ -166,6 +166,42 @@ onMounted(() =>{});
 </script>
 
 <style scoped>
+dialog {
+    width: 50%;
+    max-width: 500px;
+    padding: 30px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+dialog p {
+    font-size: 18px;    
+    margin-bottom: 20px;
+}
+
+dialog .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    background-color: #4cae4c;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+dialog .btn:hover {
+    background-color: #4cae4c;
+}
+
 .key-button.incorrect{
     background-color: #E74C3C !important;
     border: none;
