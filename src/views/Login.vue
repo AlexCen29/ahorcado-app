@@ -9,13 +9,13 @@
                     <div class="card-body p-4">
                         <form @submit.prevent="login">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Usuario</label>
+                                <label for="username" class="form-label">Correo</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-person-circle"></i>
                                     </span>
                                     <input type="text" class="form-control" id="username"
-                                        placeholder="Tu nombre de usuario" required>
+                                        placeholder="Tu correo electronico" required>
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -57,7 +57,7 @@ export default {
     name: 'LoginView',
     data() {
         return {
-            username: '',
+            correo: '',
             password: ''
         }
     },
