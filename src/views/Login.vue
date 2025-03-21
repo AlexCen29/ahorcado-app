@@ -72,9 +72,9 @@ export default {
         async handleSubmit() {
             this.isLoading = true;
             try {
-                console.log("Iniciando session de usuario...", API_URL);
+                console.log("Iniciando session de usuario...", import.meta.env.VITE_API_URL);
                 const response = await axios.post(
-                    `${API_URL}login`,
+                    `${import.meta.env.VITE_API_URL}login`,
                     {
                         email: this.email,
                         password: this.password,

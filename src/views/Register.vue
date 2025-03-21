@@ -81,9 +81,9 @@ export default {
         async handleRegister() {
             this.isLoading = true;
             try {
-                console.log("Registrando usuario...", API_URL);
+                console.log("Registrando usuario...", import.meta.env.VITE_API_URL);
                 const response = await axios.post(
-                    `${API_URL}register`,
+                    `${import.meta.env.VITE_API_URL}register`,
                     {
                         name: this.username,
                         email: this.email,
@@ -101,6 +101,7 @@ export default {
                         text: '¡Te has registrado correctamente!',
                         confirmButtonColor: '#9BC53D',
                     });
+                    this.$router.push("/game");
                 } else {
                     throw new Error(response.data);
                 }
