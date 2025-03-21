@@ -40,7 +40,7 @@
                             </div>
                             <div class="col-md-4">
                                 <button @click="selectDifficulty('hard')" class="btn-difficulty btn-hard">
-                                    <i class="bi bi-emoji-angry me-2"></i> Difícil
+                                    <i class="bi bi-emoji-dizzy me-2"></i> Difícil
                                 </button>
                             </div>
                         </div>

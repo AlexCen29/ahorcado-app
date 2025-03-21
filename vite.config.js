@@ -21,7 +21,5 @@ export default defineConfig({
       allow: ['..', 'node_modules']
     }
   },
-  define: {
-    API_URL: JSON.stringify('https://ahorcado-api-production.up.railway.app/api/auth/'),
-  }
+  
 })
