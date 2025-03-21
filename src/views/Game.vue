@@ -121,7 +121,10 @@ const difficultyClass = computed(() => {
 const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
 
 const Config = () => router.push("/admin");
-const LogOut = () => router.push("/login");
+const LogOut = () => {
+    localStorage.removeItem('authToken');
+    router.push("/login");
+};
 
 const selectLetter = (letter) => {
     if (gameOver.value || selectedLetters.value.includes(letter)) return;

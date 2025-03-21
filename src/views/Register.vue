@@ -7,14 +7,14 @@
                         <h2 class="mb-0">¡Únete al Juego del Ahorcado!</h2>
                     </div>
                     <div class="card-body p-4">
-                        <form>
+                        <form @submit.prevent="handleRegister">
                             <div class="mb-3">
                                 <label for="newUsername" class="form-label">Nombre de Usuario</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-person-circle"></i>
                                     </span>
-                                    <input type="text" class="form-control" id="newUsername"
+                                    <input :disabled="isLoading" v-model="username" type="text" class="form-control" id="newUsername"
                                         placeholder="Elige un nombre de usuario" required>
                                 </div>
                             </div>
@@ -24,8 +24,8 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-envelope-fill"></i>
                                     </span>
-                                    <input type="email" class="form-control" id="email" placeholder="tu@correo.com"
-                                        required>
+                                    <input :disabled="isLoading" v-model="email" type="email" class="form-control" id="email"
+                                        placeholder="tu@correo.com" required>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -34,13 +34,13 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                    <input type="password" class="form-control" id="newPassword"
+                                    <input :disabled="isLoading" v-model="password" type="password" class="form-control" id="newPassword"
                                         placeholder="Crea una contraseña" required>
                                 </div>
                             </div>
-                            
+
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-danger btn-lg">
+                                <button :disabled="isLoading" type="submit" class="btn btn-danger btn-lg">
                                     <i class="bi bi-person-check-fill me-2"></i>
                                     Registrarse
                                 </button>
@@ -61,15 +61,66 @@
 </template>
 
 <script>
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
 export default {
     name: 'RegisterView',
     data() {
         return {
-            newUsername: '',
+            //variables de estado
+            isLoading: false,
+            errorMessage: '',
+            //datos del formulario
+            username: '',
             email: '',
-            newPassword: ''
+            password: ''
         }
     },
+    methods: {
+        async handleRegister() {
+            this.isLoading = true;
+            try {
+                console.log("Registrando usuario...", API_URL);
+                const response = await axios.post(
+                    `${API_URL}register`,
+                    {
+                        name: this.username,
+                        email: this.email,
+                        password: this.password,
+                        rol: 'USUARIO'
+                    });
+
+                console.log(response);
+
+                // Paso 3: Manejar la respuesta
+                if (response.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Registro exitoso',
+                        text: '¡Te has registrado correctamente!',
+                        confirmButtonColor: '#9BC53D',
+                    });
+                } else {
+                    throw new Error(response.data);
+                }
+            } catch (error) {
+                const errorMessage = error.response && error.response.data && error.response.data.error
+                    ? error.response.data.error
+                    : '¡Ha ocurrido un error al iniciar sesión! Por favor, intenta de nuevo.';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al iniciar sesión',
+                    text: errorMessage,
+                    confirmButtonColor: '#E55934',
+                });
+            }  finally {
+                this.isLoading = false;
+            }
+            console.log("Datos de registro:", this.form);
+
+        },
+    }
 }
 </script>
 
@@ -81,7 +132,7 @@ export default {
 
 .card-header {
     background-color: #FA7921 !important;
-    
+
 }
 
 .card-body {
@@ -91,7 +142,7 @@ export default {
 .btn-danger {
     background-color: #E55934 !important;
     border-color: #E55934 !important;
-    
+
     font-weight: bold;
     transition: all 0.3s ease;
 }
@@ -104,7 +155,7 @@ export default {
 .form-control,
 .input-group-text {
     border-radius: 10px;
-    
+
 }
 
 .form-control:focus {
@@ -113,13 +164,13 @@ export default {
 }
 
 input::placeholder {
-    
+
     font-style: italic;
     opacity: 0.7;
 }
 
 label {
-    
+
     font-weight: bold;
 }
 </style>

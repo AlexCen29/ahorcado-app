@@ -7,14 +7,14 @@
                         <h2 class="mb-0">¡Bienvenido al Ahorcado!</h2>
                     </div>
                     <div class="card-body p-4">
-                        <form @submit.prevent="login">
+                        <form @submit.prevent="handleSubmit">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Correo</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-person-circle"></i>
                                     </span>
-                                    <input type="text" class="form-control" id="username"
+                                    <input :disabled="isLoading" v-model="email" type="text" class="form-control" id="username"
                                         placeholder="Tu correo electronico" required>
                                 </div>
                             </div>
@@ -24,12 +24,12 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                    <input type="password" class="form-control" id="password"
+                                    <input :disabled="isLoading" v-model="password" type="password" class="form-control" id="password"
                                         placeholder="Tu contraseña" required>
                                 </div>
                             </div>
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success btn-lg">
+                                <button :disabled="isLoading" type="submit" class="btn btn-success btn-lg">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
                                     Iniciar Sesión
                                 </button>
@@ -53,18 +53,58 @@
 </template>
 
 <script>
+import axios from 'axios';
+import Swal from 'sweetalert2';
+
 export default {
     name: 'LoginView',
     data() {
         return {
-            correo: '',
+            //variable globales
+            isLoading: false,
+            //variables para el formulario de inicio de sesión
+            email: '',
             password: ''
         }
     },
     methods:{
-        login(){
-            this.$router.push("/game");
-        }
+
+        async handleSubmit() {
+            this.isLoading = true;
+            try {
+                console.log("Iniciando session de usuario...", API_URL);
+                const response = await axios.post(
+                    `${API_URL}login`,
+                    {
+                        email: this.email,
+                        password: this.password,
+                    });
+
+                console.log(response);
+
+                // Paso 3: Manejar la respuesta
+                if (response.status === 200) {
+                    localStorage.setItem('authToken', response.data.token);
+                    this.$router.push("/game");
+                } else {
+                    throw new Error(response.data);
+                }
+            }  catch (error) {
+                const errorMessage = error.response && error.response.data && error.response.data.error
+                    ? error.response.data.error
+                    : '¡Ha ocurrido un error al iniciar sesión! Por favor, intenta de nuevo.';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al iniciar sesión',
+                    text: errorMessage,
+                    confirmButtonColor: '#E55934',
+                });
+            }  finally {
+                this.isLoading = false;
+            }
+            console.log("Datos de registro:", this.form);
+
+        },
     }
 }
 </script>
