@@ -96,9 +96,9 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const incorrectLetters = ref([]);
 const words = ref({
-    easy: ["VUE", "CSS", "HTML", "PHP", "SASS"],
-    medium: ["JAVASCRIPT", "LARAVEL", "PYTHON", "MYSQL"],
-    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP"]
+    easy: ["VUE", "CSS", "HTML", "PHP", "SASS", "JAVA", "SQL", "RUBY"],
+    medium: ["JAVASCRIPT", "LARAVEL", "PYTHON", "MYSQL", "ANGULAR", "REACT", "NODEJS", "SWIFT", "FLUTTER"],
+    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP", "DJANGO", "EXPRESSJS", "MONGODB", "POSTGRESQL", "REDIS"]
 });
 const selectedWord = ref("");
 const wordArray = ref([]);
@@ -144,7 +144,7 @@ const checkGameStatus = () => {
         message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
     } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter))) {
         gameOver.value = true;
-        message.value = "Felicidades, ¡Ganaste! 🎉";
+        message.value = "Felicidades, ¡Ganaste!";
     }
 };
 
