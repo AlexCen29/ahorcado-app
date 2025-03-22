@@ -73,18 +73,21 @@ export default {
             this.isLoading = true;
             try {
                 console.log("Iniciando session de usuario...", import.meta.env.VITE_API_URL);
+                //axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
                 const response = await axios.post(
                     `${import.meta.env.VITE_API_URL}login`,
                     {
                         email: this.email,
                         password: this.password,
-                    });
+                    },
+                    //{ withCredentials: true, }
+                );
 
                 console.log(response);
 
                 // Paso 3: Manejar la respuesta
                 if (response.status === 200) {
-                    localStorage.setItem('authToken', response.data.token);
+                    sessionStorage.setItem('authToken', response.data.token);
                     this.$router.push("/game");
                 } else {
                     throw new Error(response.data);

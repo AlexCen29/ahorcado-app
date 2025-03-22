@@ -58,60 +58,29 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <form>
+              <form @submit.prevent="wordSubmit">
                 <div class="mb-3">
                   <label for="word" class="form-label">Palabra</label>
-                  <input type="text" class="form-control" id="word" v-model="newWord.word">
+                  <input type="text" class="form-control" id="word" v-model="form.word" required :disabled="isLoading">
                 </div>
                 <div class="mb-3">
                   <label for="difficulty" class="form-label">Dificultad</label>
-                  <select class="form-select" id="difficulty" v-model="newWord.difficulty">
-                    <option value="Fácil">Fácil</option>
-                    <option value="Media">Media</option>
-                    <option value="Difícil">Difícil</option>
+                  <select class="form-select" id="difficulty" v-model="form.difficulty" required :disabled="isLoading">
+                    <option value="FACIL">Fácil</option>
+                    <option value="MEDIO">Media</option>
+                    <option value="DIFICIL">Difícil</option>
                   </select>
                 </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn btn-add">Guardar</button>
+                </div>
               </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" class="btn btn-add" @click="addNewWord">Guardar</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Modal para editar palabra -->
-      <div class="modal fade" id="editWordModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editWordModalLabel">Editar Palabra</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form>
-                <div class="mb-3">
-                  <label for="editWord" class="form-label">Palabra</label>
-                  <input type="text" class="form-control" id="editWord" v-model="editingWord.word">
-                </div>
-                <div class="mb-3">
-                  <label for="editDifficulty" class="form-label">Dificultad</label>
-                  <select class="form-select" id="editDifficulty" v-model="editingWord.difficulty">
-                    <option value="Fácil">Fácil</option>
-                    <option value="Media">Media</option>
-                    <option value="Difícil">Difícil</option>
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" class="btn btn-add" @click="updateWord">Guardar Cambios</button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </body>
 </template>
@@ -121,6 +90,8 @@ import { Modal } from 'bootstrap';
 import { AgGridVue } from 'ag-grid-vue3';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'AdminView',
@@ -130,14 +101,11 @@ export default {
   data() {
     return {
       quickFilterText: '',
-      newWord: {
-        word: '',
-        difficulty: 'Fácil'
-      },
-      editingWord: {
+      isLoading: false,
+      form: {
         id: null,
         word: '',
-        difficulty: ''
+        difficulty: 'FACIL'
       },
       localeText: {
         errorTabla: false,
@@ -162,13 +130,13 @@ export default {
             let textColor = 'black';
 
             switch (params.value) {
-              case 'Fácil':
+              case 'FACIL':
                 bgColor = '#9BC53D'; // Verde
                 break;
-              case 'Media':
+              case 'MEDIO':
                 bgColor = '#FDE74C'; // Amarillo
                 break;
-              case 'Difícil':
+              case 'DIFICIL':
                 bgColor = '#E55934'; // Rojo
                 textColor = 'white';
                 break;
@@ -210,21 +178,21 @@ export default {
         resizable: true
       },
       rowData: [
-        { id: 1, word: "MANZANA", difficulty: "Fácil" },
-        { id: 2, word: "PROGRAMACION", difficulty: "Difícil" },
-        { id: 3, word: "INTERNET", difficulty: "Media" },
-        { id: 4, word: "COMPUTADORA", difficulty: "Media" },
-        { id: 5, word: "UNIVERSIDAD", difficulty: "Difícil" },
-        { id: 6, word: "PERRO", difficulty: "Fácil" },
-        { id: 7, word: "GATO", difficulty: "Fácil" },
-        { id: 8, word: "ELEFANTE", difficulty: "Media" },
-        { id: 9, word: "ALGORITMO", difficulty: "Difícil" },
-        { id: 10, word: "TECLADO", difficulty: "Fácil" },
-        { id: 11, word: "MONITOR", difficulty: "Fácil" },
-        { id: 12, word: "INTERFAZ", difficulty: "Media" },
-        { id: 13, word: "NAVEGADOR", difficulty: "Media" },
-        { id: 14, word: "JAVASCRIPT", difficulty: "Difícil" },
-        { id: 15, word: "DESARROLLO", difficulty: "Difícil" }
+        { id: 1, word: "MANZANA", difficulty: "FACIL" },
+        { id: 2, word: "PROGRAMACION", difficulty: "DIFICIL" },
+        { id: 3, word: "INTERNET", difficulty: "MEDIO" },
+        { id: 4, word: "COMPUTADORA", difficulty: "MEDIO" },
+        { id: 5, word: "UNIVERSIDAD", difficulty: "DIFICIL" },
+        { id: 6, word: "PERRO", difficulty: "FACIL" },
+        { id: 7, word: "GATO", difficulty: "FACIL" },
+        { id: 8, word: "ELEFANTE", difficulty: "MEDIO" },
+        { id: 9, word: "ALGORITMO", difficulty: "DIFICIL" },
+        { id: 10, word: "TECLADO", difficulty: "FACIL" },
+        { id: 11, word: "MONITOR", difficulty: "FACIL" },
+        { id: 12, word: "INTERFAZ", difficulty: "MEDIO" },
+        { id: 13, word: "NAVEGADOR", difficulty: "MEDIO" },
+        { id: 14, word: "JAVASCRIPT", difficulty: "DIFICIL" },
+        { id: 15, word: "DESARROLLO", difficulty: "DIFICIL" }
       ]
     };
   },
@@ -269,9 +237,55 @@ export default {
       params.api.sizeColumnsToFit();
     },
 
-    Return(){
-            this.$router.push("/game");
+    Return() {
+      this.$router.push("/game");
+    },
+
+    async wordSubmit() {
+      this.isLoading = true;
+      try {
+        const token = sessionStorage.getItem('authToken');
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_WORD}register`,
+          {
+            word: this.form.word,
+            difficulty: this.form.difficulty,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+
+        console.log("Respuesta:", response);
+
+        if (response.status === 200) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Palabra registrada',
+            text: '¡Se ha agregado correctamente!',
+            confirmButtonColor: '#9BC53D',
+          });
+          this.closeModal();
+          // aquí podrías actualizar la tabla si es necesario
+        } else {
+          throw new Error(response.data);
         }
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: errorMessage,
+          confirmButtonColor: '#E55934',
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    }
+
   },
   async mounted() {
     // const steps = 2;
@@ -406,7 +420,7 @@ export default {
 
 .modal-footer {
   border-top: none;
-  padding: 15px 20px;
+  padding: 15px 0px;
 }
 
 /* Form styling */

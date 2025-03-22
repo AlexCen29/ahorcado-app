@@ -113,7 +113,7 @@ const difficultyText = computed(() => {
     return difficulty.value === 'FACIL' ? 'Fácil' : difficulty.value === 'MEDIO' ? 'Medio' : 'Difícil';
 });
 const difficultyClass = computed(() => {
-    return difficulty.value === 'FACIL' ? 'badge-easy' : difficulty.value === 'MEDIO' ? 'badge-medium' : 'badge-hard';
+    return difficulty.value === 'FACIL' ? 'difficulty-easy' : difficulty.value === 'MEDIO' ? 'difficulty-medium' : 'difficulty-hard';
 });
 const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
 
