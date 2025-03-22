@@ -29,17 +29,17 @@
                         <p class="mb-4">Elige el nivel de dificultad para comenzar el juego</p>
                         <div class="row justify-content-center g-4">
                             <div class="col-md-4">
-                                <button @click="selectDifficulty('easy')" class="btn-difficulty btn-easy">
+                                <button @click="selectDifficulty('FACIL')" class="btn-difficulty btn-easy">
                                     <i class="bi bi-emoji-expressionless me-2"></i> Fácil
                                 </button>
                             </div>
                             <div class="col-md-4">
-                                <button @click="selectDifficulty('medium')" class="btn-difficulty btn-medium">
+                                <button @click="selectDifficulty('MEDIO')" class="btn-difficulty btn-medium">
                                     <i class="bi bi-emoji-astonished me-2"></i> Medio
                                 </button>
                             </div>
                             <div class="col-md-4">
-                                <button @click="selectDifficulty('hard')" class="btn-difficulty btn-hard">
+                                <button @click="selectDifficulty('DIFICIL')" class="btn-difficulty btn-hard">
                                     <i class="bi bi-emoji-angry me-2"></i> Difícil
                                 </button>
                             </div>
@@ -92,14 +92,11 @@
 import Ranking from '@/components/Ranking.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const router = useRouter();
 const incorrectLetters = ref([]);
-const words = ref({
-    easy: ["VUE", "CSS", "HTML", "PHP", "SASS", "JAVA", "SQL", "RUBY"],
-    medium: ["JAVASCRIPT", "LARAVEL", "PYTHON", "MYSQL", "ANGULAR", "REACT", "NODEJS", "SWIFT", "FLUTTER"],
-    hard: ["TYPESCRIPT", "TAILWINDCSS", "BOOTSTRAP", "DJANGO", "EXPRESSJS", "MONGODB", "POSTGRESQL", "REDIS"]
-});
+const words = ref([]);
 const selectedWord = ref("");
 const wordArray = ref([]);
 const guessedLetters = ref([]);
@@ -113,10 +110,10 @@ const difficulty = ref("");
 const keyboard = ref(['QWERTYUIOP', 'ASDFGHJKLÑ', 'ZXCVBNM']);
 
 const difficultyText = computed(() => {
-    return difficulty.value === 'easy' ? 'Fácil' : difficulty.value === 'medium' ? 'Medio' : 'Difícil';
+    return difficulty.value === 'FACIL' ? 'Fácil' : difficulty.value === 'MEDIO' ? 'Medio' : 'Difícil';
 });
 const difficultyClass = computed(() => {
-    return difficulty.value === 'easy' ? 'badge-easy' : difficulty.value === 'medium' ? 'badge-medium' : 'badge-hard';
+    return difficulty.value === 'FACIL' ? 'badge-easy' : difficulty.value === 'MEDIO' ? 'badge-medium' : 'badge-hard';
 });
 const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
 
@@ -148,14 +145,56 @@ const checkGameStatus = () => {
     }
 };
 
-const selectDifficulty = (level) => {
+const selectDifficulty = async (level) => {
     difficulty.value = level;
     difficultySelected.value = true;
-    resetGame();
+    await fetcheo(level);
+    if (words.value && words.value.length > 0) {
+        resetGame();
+    } else {
+        console.error('No se encontraron palabras para la dificultad seleccionada.');
+    }
+};
+
+const fetcheo = async (dificultad) => {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            throw new Error('Token de autenticación no encontrado');
+        }
+
+        console.log(`Fetching words for difficulty: ${dificultad}`);
+        const response = await axios.get(import.meta.env.VITE_API_URL_GAME+dificultad, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('Response data:', response.data);
+        words.value = response.data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        if (error.response) {
+            if (error.response.status === 400) {
+                console.error('Solicitud incorrecta. Verifica los parámetros y la URL.');
+            } else if (error.response.status === 401) {
+                console.error('No autorizado. Verifica tu token de autenticación.');
+            } else {
+                console.error(`Error ${error.response.status}: ${error.response.statusText}`);
+            }
+        } else {
+            console.error('Error en la solicitud:', error.message);
+        }
+    }
 };
 
 const resetGame = () => {
-    selectedWord.value = words.value[difficulty.value][Math.floor(Math.random() * words.value[difficulty.value].length)];
+    if (!words.value || words.value.length === 0) {
+        console.error('No se encontraron palabras para la dificultad seleccionada.');
+        return;
+    }
+    selectedWord.value = words.value[Math.floor(Math.random() * words.value.length)];
     wordArray.value = selectedWord.value.split("");
     guessedLetters.value = [];
     selectedLetters.value = [];
@@ -165,7 +204,7 @@ const resetGame = () => {
     message.value = "";
 };
 
-onMounted(() =>{});
+onMounted(() => {});
 </script>
 
 <style scoped>
