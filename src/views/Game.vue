@@ -161,13 +161,13 @@ const selectDifficulty = async (level) => {
 
 const fetcheo = async (dificultad) => {
     try {
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
         if (!token) {
             throw new Error('Token de autenticación no encontrado');
         }
 
         console.log(`Fetching words for difficulty: ${dificultad}`);
-        const response = await axios.get(`https://ahorcado-api-production.up.railway.app/api/word/difficulty/${dificultad}`, {
+        const response = await axios.get(import.meta.env.VITE_API_URL_GAME+dificultad, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

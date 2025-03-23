@@ -14,7 +14,7 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-person-circle"></i>
                                     </span>
-                                    <input :disabled="isLoading" v-model="email" type="text" class="form-control" id="username"
+                                    <input :disabled="isLoading" v-model="email" type="email" class="form-control" id="username"
                                         placeholder="Tu correo electronico" required>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@ export default {
 
                 // Paso 3: Manejar la respuesta
                 if (response.status === 200) {
-                    sessionStorage.setItem('authToken', response.data.token);
+                    sessionStorage.setItem('authToken', response.data.token);                    
                     this.$router.push("/game");
                 } else {
                     throw new Error(response.data);
