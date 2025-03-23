@@ -113,7 +113,7 @@ const difficultyText = computed(() => {
     return difficulty.value === 'FACIL' ? 'Fácil' : difficulty.value === 'MEDIO' ? 'Medio' : 'Difícil';
 });
 const difficultyClass = computed(() => {
-    return difficulty.value === 'FACIL' ? 'difficulty-easy' : difficulty.value === 'MEDIO' ? 'difficulty-medium' : 'difficulty-hard';
+    return difficulty.value === 'FACIL' ? 'badge-easy' : difficulty.value === 'MEDIO' ? 'badge-medium' : 'badge-hard';
 });
 const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.value}.png`, import.meta.url).href);
 
@@ -125,13 +125,16 @@ const LogOut = () => {
 
 const selectLetter = (letter) => {
     if (gameOver.value || selectedLetters.value.includes(letter)) return;
-    selectedLetters.value.push(letter);
-    if (wordArray.value.includes(letter)) {
-        guessedLetters.value.push(letter);
+    
+    selectedLetters.value.push(letter.toUpperCase()); // Convertimos a mayúscula para uniformidad
+    
+    if (wordArray.value.map(l => l.toUpperCase()).includes(letter.toUpperCase())) {
+        guessedLetters.value.push(letter.toUpperCase());
     } else {
         mistakes.value++;
-        incorrectLetters.value.push(letter);
+        incorrectLetters.value.push(letter.toUpperCase());
     }
+
     checkGameStatus();
 };
 
@@ -139,7 +142,7 @@ const checkGameStatus = () => {
     if (mistakes.value >= maxMistakes.value) {
         gameOver.value = true;
         message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
-    } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter))) {
+    } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter.toUpperCase()))) {
         gameOver.value = true;
         message.value = "Felicidades, ¡Ganaste!";
     }
@@ -164,7 +167,7 @@ const fetcheo = async (dificultad) => {
         }
 
         console.log(`Fetching words for difficulty: ${dificultad}`);
-        const response = await axios.get(import.meta.env.VITE_API_URL_GAME+dificultad, {
+        const response = await axios.get(`https://ahorcado-api-production.up.railway.app/api/word/difficulty/${dificultad}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -194,8 +197,11 @@ const resetGame = () => {
         console.error('No se encontraron palabras para la dificultad seleccionada.');
         return;
     }
-    selectedWord.value = words.value[Math.floor(Math.random() * words.value.length)];
-    wordArray.value = selectedWord.value.split("");
+
+    const selectedWordObject = words.value[Math.floor(Math.random() * words.value.length)];
+    selectedWord.value = selectedWordObject.word.trim().toUpperCase(); // Normalizamos la palabra
+    wordArray.value = selectedWord.value.split(""); // Convertimos en array correctamente
+
     guessedLetters.value = [];
     selectedLetters.value = [];
     incorrectLetters.value = [];
