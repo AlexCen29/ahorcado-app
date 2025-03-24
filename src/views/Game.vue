@@ -12,7 +12,7 @@
                     <span v-if="difficultySelected" class="difficulty-badge" :class="difficultyClass">
                         {{ difficultyText }}
                     </span>
-                    <button class="btn btn-settings ms-2" @click="Config">
+                    <button v-if="isAdmin" class="btn btn-settings ms-2" @click="Config">
                         <i class="bi bi-gear-fill me-2"></i>Ajustes
                     </button>
                 </div>
@@ -119,9 +119,14 @@ const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.
 
 const Config = () => router.push("/admin");
 const LogOut = () => {
-    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('authToken');
     router.push("/login");
 };
+
+const isAdmin = computed(() => {
+  const user = JSON.parse(sessionStorage.getItem('authUser'));
+  return user && user.rol === 'ADMIN';
+});
 
 const selectLetter = (letter) => {
     if (gameOver.value || selectedLetters.value.includes(letter)) return;

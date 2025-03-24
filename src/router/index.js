@@ -6,12 +6,12 @@ import User from '../views/User.vue'
 import Game from '../views/Game.vue'
 
 const routes = [
-  { path: '/', redirect: '/login' }, //rdirige a login por defecto
+  { path: '/', redirect: '/login' },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
-  { path: '/admin', component: Admin },
-  { path: '/user', component: User },
-  { path: '/game', component: Game },
+  { path: '/admin', component: Admin, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/user', component: User, meta: { requiresAuth: true } },
+  { path: '/game', component: Game, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
@@ -19,4 +19,27 @@ const router = createRouter({
   routes
 })
 
-export default router
+//protección de rutas
+router.beforeEach((to, from, next) => {
+  const token = sessionStorage.getItem('authToken');
+  const user = JSON.parse(sessionStorage.getItem('authUser'));
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!token || !user) {
+      next({ path: '/login' });
+    } else if (to.matched.some(record => record.meta.requiresAdmin) && user.rol !== 'ADMIN') {
+      next('/game'); //redirige si no es admin
+    } else {
+      next();
+    }
+  } else {
+    if ((to.path === '/login' || to.path === '/register') && token) {
+      next('/game');
+    } else {
+      next();
+    }
+  }
+});
+
+
+export default router;
