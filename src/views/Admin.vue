@@ -3,13 +3,13 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid d-flex justify-content-between align-items-center">
         <!-- Botón de regreso -->
-        <button class="btn btn-back" @click="Return">
+        <button class="btn btn-back" @click="Return" :disabled="isLoading">
           <i class="bi bi-box-arrow-left me-2"></i>Regresar
         </button>
 
         <h1 class="navbar-brand admin-title text-white">Panel de Administrador</h1>
 
-        <button class="btn btn-add" @click="showModal()">
+        <button class="btn btn-add" @click="showModal(false)" :disabled="isLoading">
           <i class="bi bi-plus-circle-fill me-2"></i>Nueva Palabra
         </button>
       </div>
@@ -40,7 +40,7 @@
               <div class="ag-theme-alpine" style="height: 600px; width: 100%;">
                 <ag-grid-vue style="width: 100%; height: 380px;" :columnDefs="columnDefs" :rowData="rowData"
                   :quickFilterText="quickFilterText" :context="{ componentParent: this }" @grid-ready="onGridReady"
-                  :localeText="localeText" @filterChanged="onFilterChanged">
+                  :localeText="localeText" @filterChanged="onFilterChanged" :loading="isLoading">
                 </ag-grid-vue>
               </div>
             </div>
@@ -49,12 +49,12 @@
       </div>
 
       <!-- Modal para agregar nueva palabra -->
-      <div ref="newWordModal" class="modal fade" id="newWordModal" tabindex="-1" aria-labelledby="newWordModalLabel"
+      <div ref="modal" class="modal fade" id="newWordModal" tabindex="-1" aria-labelledby="newWordModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="newWordModalLabel">Agregar Nueva Palabra</h5>
+              <h5 class="modal-title" id="newWordModalLabel"><span>{{ isEditing ? 'Editar palabra' : 'Crear palabra' }}</span></h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -73,7 +73,7 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="submit" class="btn btn-add">Guardar</button>
+                  <button type="submit" class="btn btn-add"><span>{{ isEditing ? 'Editar' : 'Guardar' }}</span></button>
                 </div>
               </form>
             </div>
@@ -102,6 +102,7 @@ export default {
     return {
       quickFilterText: '',
       isLoading: false,
+      isEditing: false,
       form: {
         id: null,
         word: '',
@@ -111,9 +112,7 @@ export default {
         errorTabla: false,
         sinInformacion: '',
         rowData: [],
-        totalRows: 0,
         originalRowData: [],
-        displayedRows: 0,
         noRowsToShow: 'No hay datos para mostrar'
       },
       columnDefs: [
@@ -156,18 +155,45 @@ export default {
           pinned: 'right',
           cellRenderer: function (params) {
             const button = document.createElement('button');
-            button.className = 'btn btn-warning btn-sm d-flex align-items-center gap-2';
+            button.className = 'btn btn-warning btn-sm';
+            button.innerHTML = '✏️ Editar';
 
-            // Crear el ícono de Bootstrap
-            const icon = document.createElement('i');
-            icon.className = 'bi bi-pencil-fill';
+            // Acceder a la instancia del componente Vue
+            const vueComponentInstance = params.context?.componentParent;
 
-            // Crear el texto del botón
-            const text = document.createTextNode(' Editar');
+            if (!vueComponentInstance) {
+              console.error('No se pudo acceder al componente Vue.');
+              return button;
+            }
+            button.disabled = vueComponentInstance.isSubmitting;
 
-            // Agregar el ícono y el texto al botón
-            button.appendChild(icon);
-            button.appendChild(text);
+            button.addEventListener('click', async function () {
+              const clave = params.data.id;
+              try {
+                const result = await Swal.fire({
+                  title: "Confirmación",
+                  text: `¿Desea editar registro con ID: ${clave}?`,
+                  icon: "warning",
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  showCancelButton: true,
+                  confirmButtonText: 'Sí, continuar',
+                });
+                if (result.isConfirmed) {
+                  await vueComponentInstance.editWord(clave);
+                }
+              } catch (error) {
+                Swal.fire({
+                  title: "Error",
+                  text: error.message,
+                  icon: "error",
+                  confirmButtonColor: '#E55934',
+                });
+              }
+              finally {
+                vueComponentInstance.isLoading = false;
+              }
+            });
 
             return button;
           }
@@ -177,63 +203,29 @@ export default {
       defaultColDef: {
         resizable: true
       },
-      rowData: [
-        { id: 1, word: "MANZANA", difficulty: "FACIL" },
-        { id: 2, word: "PROGRAMACION", difficulty: "DIFICIL" },
-        { id: 3, word: "INTERNET", difficulty: "MEDIO" },
-        { id: 4, word: "COMPUTADORA", difficulty: "MEDIO" },
-        { id: 5, word: "UNIVERSIDAD", difficulty: "DIFICIL" },
-        { id: 6, word: "PERRO", difficulty: "FACIL" },
-        { id: 7, word: "GATO", difficulty: "FACIL" },
-        { id: 8, word: "ELEFANTE", difficulty: "MEDIO" },
-        { id: 9, word: "ALGORITMO", difficulty: "DIFICIL" },
-        { id: 10, word: "TECLADO", difficulty: "FACIL" },
-        { id: 11, word: "MONITOR", difficulty: "FACIL" },
-        { id: 12, word: "INTERFAZ", difficulty: "MEDIO" },
-        { id: 13, word: "NAVEGADOR", difficulty: "MEDIO" },
-        { id: 14, word: "JAVASCRIPT", difficulty: "DIFICIL" },
-        { id: 15, word: "DESARROLLO", difficulty: "DIFICIL" }
-      ]
+      rowData: []
     };
   },
   methods: {
-    showModal() {
-      const modalElement = this.$refs.newWordModal;
-      const modalInstance = new Modal(modalElement);
-      modalInstance.show();
-    },
-
-    closeModal() {
-      const modalElement = this.$refs.newWordModal;
-      const modalInstance = new Modal(modalElement);
-      modalInstance.hide();
-    },
-
-    onFilterChanged() {
-      this.displayedRows = this.gridApi.getDisplayedRowCount();
-    },
-
-    onQuickFilterChanged() {
-      const query = this.quickFilterText.toLowerCase().trim();
-
-      if (query === '') {
-        this.rowData = [...this.originalRowData];  // Restaurar los datos originales
-      } else {
-        this.rowData = this.originalRowData.filter((forma) => {
-          return (
-            forma.claveformacargo.toLowerCase().includes(query) ||
-            forma.nombre.toLowerCase().includes(query)
-          );
-        });
+    showModal(editando) {
+      if (!editando) {
+        this.isEditing = false;
+        this.form.id = null;
+        this.form.word = '';
+        this.form.difficulty = 'FACIL';
       }
-
-      this.displayedRows = this.rowData.length;  // Actualiza el número de filas visibles
+      this.modal.show();
+    },
+    closeModal() {
+      this.modal.hide();
+    },
+    onQuickFilterChanged() {
+      this.gridApi.setQuickFilter(this.quickFilterText);
     },
 
     onGridReady(params) {
       this.gridApi = params.api;
       this.gridColumnApi = params.columnApi;
-      this.displayedRows = this.rowData.length;
       params.api.sizeColumnsToFit();
     },
 
@@ -244,14 +236,104 @@ export default {
     async wordSubmit() {
       this.isLoading = true;
       try {
+
+        let response = this.isEditing ? await this.updateWord(this.form.id) : await this.createWord();
+
+        await this.loadWorks();
+        this.closeModal();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: response,
+          confirmButtonColor: '#9BC53D',
+        });
+        // aquí podrías actualizar la tabla si es necesario
+
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error11',
+          text: errorMessage,
+          confirmButtonColor: '#E55934',
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async createWord() {
+      const token = sessionStorage.getItem('authToken');
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_WORD}/register`,
+        {
+          word: this.form.word,
+          difficulty: this.form.difficulty,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      if (response.status !== 200) {
+        const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
+        throw new Error(errorMessage);
+      }
+
+      return "¡Palabra creada correctamente!";
+    },
+
+    async updateWord(id) {
+      const token = sessionStorage.getItem('authToken');
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_WORD}/${id}`,
+        {
+          word: this.form.word,
+          difficulty: this.form.difficulty,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+      if (response.status !== 200) {
+        const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
+        throw new Error(errorMessage);
+      }
+
+      return "¡Palabra creada correctamente!";
+    },
+
+    async editWord(clave) {
+      this.isLoading = true;
+      const token = sessionStorage.getItem('authToken');
+      const response = await axios.get(`${import.meta.env.VITE_API_WORD}/${clave}`, {
+        params: { clave: clave },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      if (response.status === 200) {
+        this.form.id = response.data.id;
+        this.form.word = response.data.word;
+        this.form.difficulty = response.data.difficulty;
+        this.isEditing = true;
+        this.modal.show();
+      } else {
+        const errorMessage = error.response?.data?.error || '¡Error al recuperar la palabra!';
+        throw new Error(errorMessage);
+      }
+    },
+
+    async loadWorks() {
+      try {
         const token = sessionStorage.getItem('authToken');
 
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_WORD}register`,
-          {
-            word: this.form.word,
-            difficulty: this.form.difficulty,
-          },
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_WORD}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -259,43 +341,28 @@ export default {
           }
         );
 
-        console.log("Respuesta:", response);
-
         if (response.status === 200) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Palabra registrada',
-            text: '¡Se ha agregado correctamente!',
-            confirmButtonColor: '#9BC53D',
-          });
-          this.closeModal();
-          // aquí podrías actualizar la tabla si es necesario
+          this.rowData = response.data;
+          this.originalRowData = [...response.data];
         } else {
           throw new Error(response.data);
         }
       } catch (error) {
-        const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: errorMessage,
-          confirmButtonColor: '#E55934',
-        });
+        const errorMessage = error.response?.data?.error || '¡Error al recuperar las palabras!';
+
       } finally {
         this.isLoading = false;
       }
     }
-
   },
   async mounted() {
     // const steps = 2;
     // const increment = 100 / steps;
     //await this.getListaMonedasTabla();
     // this.progress += increment;
-    // await this.getDataPDF();
+    await this.loadWorks();
     // this.progress += increment;
     // this.loading = false;
-    this.displayedRows = this.gridApi.getDisplayedRowCount();
     this.modal = new Modal(this.$refs.modal, {
       backdrop: 'static',
       keyboard: false
