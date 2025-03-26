@@ -203,7 +203,7 @@ const saveScore = async (id, palabraId, intentosUsados, maxIntentos) => {
         const response = await axios.post(`${import.meta.env.VITE_API_WORD}register`, {
             userId: id,
             wordId: palabraId,
-            attemptsMade: intentosUsados, // Asegúrate de que esto tenga un valor válido
+            attemptsMade: intentosUsados+1, // Asegúrate de que esto tenga un valor válido
             maximumNumberAttempts: maxIntentos
         }, {
             headers: {
