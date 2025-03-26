@@ -9,8 +9,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),    
-  ],
-  base:'https://github.com/AlexCen29/ahorcado-app',
+  ],  
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
