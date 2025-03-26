@@ -10,7 +10,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),    
   ],
-  base:'https://github.com/AlexCen29/ahorcado-app',
+  //base:'https://github.com/AlexCen29/ahorcado-app',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
