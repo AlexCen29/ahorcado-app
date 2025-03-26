@@ -40,7 +40,7 @@
               <div class="ag-theme-alpine" style="height: 600px; width: 100%;">
                 <ag-grid-vue style="width: 100%; height: 380px;" :columnDefs="columnDefs" :rowData="rowData"
                   :quickFilterText="quickFilterText" :context="{ componentParent: this }" @grid-ready="onGridReady"
-                  :localeText="localeText" @filterChanged="onFilterChanged" :loading="isLoading">
+                  :localeText="localeText" @filterChanged="onFilterChanged" :loading="isLoading || loadingTable">
                 </ag-grid-vue>
               </div>
             </div>
@@ -54,8 +54,10 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="newWordModalLabel"><span>{{ isEditing ? 'Editar palabra' : 'Crear palabra' }}</span></h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 class="modal-title" id="newWordModalLabel"><span>{{ isEditing ? 'Editar palabra' : 'Crear palabra'
+                  }}</span></h5>
+              <button type="button" :disabled="isLoading" class="btn-close" data-bs-dismiss="modal"
+                aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <form @submit.prevent="wordSubmit">
@@ -72,8 +74,10 @@
                   </select>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="submit" class="btn btn-add"><span>{{ isEditing ? 'Editar' : 'Guardar' }}</span></button>
+                  <button type="button" class="btn btn-cancel" data-bs-dismiss="modal"
+                    :disabled="isLoading">Cancelar</button>
+                  <button type="submit" class="btn btn-add" :disabled="isLoading"><span>{{ isEditing ? 'Editar' :
+                      'Guardar' }}</span></button>
                 </div>
               </form>
             </div>
@@ -103,6 +107,7 @@ export default {
       quickFilterText: '',
       isLoading: false,
       isEditing: false,
+      loadingTable: false,
       form: {
         id: null,
         word: '',
@@ -207,6 +212,10 @@ export default {
     };
   },
   methods: {
+    isValidWord(word) {
+      const regex = /^[a-zA-ZñÑ]+$/;
+      return regex.test(word);
+    },
     showModal(editando) {
       if (!editando) {
         this.isEditing = false;
@@ -236,6 +245,17 @@ export default {
     async wordSubmit() {
       this.isLoading = true;
       try {
+
+        if (!this.isValidWord(this.form.word)) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Palabra inválida',
+            text: 'Solo se permiten letras sin espacios, sin acentos ni caracteres especiales.',
+            confirmButtonColor: '#E55934',
+          });
+          this.isLoading = false;
+          return;
+        }
 
         let response = this.isEditing ? await this.updateWord(this.form.id) : await this.createWord();
 
@@ -303,7 +323,7 @@ export default {
         throw new Error(errorMessage);
       }
 
-      return "¡Palabra creada correctamente!";
+      return "¡Palabra actualizada correctamente!";
     },
 
     async editWord(clave) {
@@ -330,6 +350,7 @@ export default {
 
     async loadWorks() {
       try {
+        this.loadingTable = true;
         const token = sessionStorage.getItem('authToken');
 
         const response = await axios.get(
@@ -352,6 +373,7 @@ export default {
 
       } finally {
         this.isLoading = false;
+        this.loadingTable = false;
       }
     }
   },

@@ -48,44 +48,53 @@
                 </div>
                 <div v-else class="game-container card shadow-lg">
                     <div class="card-body">
-                        <div class="hangman-image-container text-center mb-4">
-                            <img :src="hangmanImage" alt="Ahorcado" class="hangman-image img-fluid" />
+                        <div v-if="isLoadingWords" class="loading-container">
+                            <LoadingComponent />
                         </div>
-                        <div v-if="gameOver">
-                            <dialog open>
-                                <p>{{ message }}</p>
-                                <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
-                            </dialog>
-                        </div>
-                        <div class="word-container text-center mb-5">
-                            <div class="letter-spaces d-flex justify-content-center">
-                                <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
-                                    <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter : ''
-                                    }}</span>
+                        <div v-else>
+                            <div class="hangman-image-container text-center mb-4">
+                                <img :src="hangmanImage" alt="Ahorcado" class="hangman-image img-fluid" />
+                            </div>
+                            <div v-if="gameOver">
+                                <dialog open>
+                                    <p>{{ message }}</p>
+                                    <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
+                                    <button class="btn btn-secondary mt-2" @click="resetDifficulty">Cambiar
+                                        Dificultad</button>
+                                </dialog>
+                            </div>
+                            <div class="word-container text-center mb-5">
+                                <div class="letter-spaces d-flex justify-content-center">
+                                    <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
+                                        <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter :
+                                            ''
+                                            }}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="keyboard-container text-center">
-                            <div v-for="(row, rowIndex) in keyboard" :key="rowIndex"
-                                class="row justify-content-center g-1">
-                                <div class="col-auto" v-for="letter in row" :key="letter">
-                                    <button class="key-button"
-                                        :class="{ 'correct': guessedLetters.includes(letter), 'incorrect': incorrectLetters.includes(letter) }"
-                                        :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
-                                        {{ letter }}
-                                    </button>
+                            <div class="keyboard-container text-center">
+                                <div v-for="(row, rowIndex) in keyboard" :key="rowIndex"
+                                    class="row justify-content-center g-1">
+                                    <div class="col-auto" v-for="letter in row" :key="letter">
+                                        <button class="key-button"
+                                            :class="{ 'correct': guessedLetters.includes(letter), 'incorrect': incorrectLetters.includes(letter) }"
+                                            :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
+                                            {{ letter }}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- <div v-if="gameOver" class="text-center mt-4">
+                            <!-- <div v-if="gameOver" class="text-center mt-4">
                             <h2>{{ message }}</h2>
                             <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
                         </div> -->
+                        </div>
+
                     </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <Ranking />
+                <Ranking ref="rankingComponent" />
             </div>
         </div>
     </section>
@@ -93,10 +102,13 @@
 
 <script setup>
 import Ranking from '@/components/Ranking.vue';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const isLoadingWords = ref(false);
+const rankingComponent = ref(null);
 const router = useRouter();
 const incorrectLetters = ref([]);
 const words = ref([]);
@@ -176,10 +188,10 @@ const checkGameStatus = () => {
 
         // Asegúrate de que selectedWordObject tenga el id correcto
         const selectedWordObject = words.value.find(word => word.word.trim().toUpperCase() === selectedWord.value);
-        
+
         // Verifica que selectedWordObject y mistakes.value tengan valores válidos
         if (selectedWordObject && mistakes.value !== undefined) {
-            saveScore(user.userId, selectedWordObject.id, mistakes.value, maxMistakes.value);  
+            saveScore(user.userId, selectedWordObject.id, mistakes.value, maxMistakes.value);
         } else {
             console.error('Error: selectedWordObject o mistakes.value no son válidos');
         }
@@ -189,9 +201,9 @@ const checkGameStatus = () => {
 const saveScore = async (id, palabraId, intentosUsados, maxIntentos) => {
     try {
         const response = await axios.post(`${import.meta.env.VITE_API_WORD}register`, {
-            userId: id,                        
+            userId: id,
             wordId: palabraId,
-            attemptsMade: intentosUsados, // Asegúrate de que esto tenga un valor válido
+            attemptsMade: intentosUsados+1, // Asegúrate de que esto tenga un valor válido
             maximumNumberAttempts: maxIntentos
         }, {
             headers: {
@@ -201,6 +213,7 @@ const saveScore = async (id, palabraId, intentosUsados, maxIntentos) => {
         });
 
         console.log('Puntaje guardado exitosamente:', response.data);
+        await rankingComponent.value.fetchPlayers();
     } catch (error) {
         if (error.response) {
             console.error('Error en la respuesta del servidor:', error.response.data);
@@ -226,13 +239,14 @@ const selectDifficulty = async (level) => {
 
 const fetcheo = async (dificultad) => {
     try {
+        isLoadingWords.value = true;
         const token = sessionStorage.getItem('authToken');
         if (!token) {
             throw new Error('Token de autenticación no encontrado');
         }
 
         console.log(`Fetching words for difficulty: ${dificultad}`);
-        const response = await axios.get(import.meta.env.VITE_API_URL_GAME+dificultad, {
+        const response = await axios.get(import.meta.env.VITE_API_URL_GAME + dificultad, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -255,6 +269,9 @@ const fetcheo = async (dificultad) => {
             console.error('Error en la solicitud:', error.message);
         }
     }
+    finally {
+        isLoadingWords.value = false;
+    }
 };
 
 const resetGame = () => {
@@ -273,6 +290,11 @@ const resetGame = () => {
     mistakes.value = 0;
     gameOver.value = false;
     message.value = "";
+};
+
+const resetDifficulty = () => {
+    difficultySelected.value = false;
+    resetGame();
 };
 
 onMounted(() => { });
