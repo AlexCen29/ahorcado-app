@@ -265,7 +265,7 @@ export default {
     async createWord() {
       const token = sessionStorage.getItem('authToken');
       const response = await axios.post(
-        `${import.meta.env.VITE_API_WORD}/register`,
+        `${import.meta.env.VITE_API_WORD_2}/register`,
         {
           word: this.form.word,
           difficulty: this.form.difficulty,
@@ -287,7 +287,7 @@ export default {
     async updateWord(id) {
       const token = sessionStorage.getItem('authToken');
       const response = await axios.put(
-        `${import.meta.env.VITE_API_WORD}/${id}`,
+        `${import.meta.env.VITE_API_WORD_2}/${id}`,
         {
           word: this.form.word,
           difficulty: this.form.difficulty,
@@ -309,7 +309,7 @@ export default {
     async editWord(clave) {
       this.isLoading = true;
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.get(`${import.meta.env.VITE_API_WORD}/${clave}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_WORD_2}/${clave}`, {
         params: { clave: clave },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -333,7 +333,7 @@ export default {
         const token = sessionStorage.getItem('authToken');
 
         const response = await axios.get(
-          `${import.meta.env.VITE_API_WORD}`,
+          `${import.meta.env.VITE_API_WORD_2}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

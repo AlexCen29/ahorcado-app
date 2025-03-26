@@ -60,14 +60,17 @@
                         <div class="word-container text-center mb-5">
                             <div class="letter-spaces d-flex justify-content-center">
                                 <div class="letter-space mx-2" v-for="(letter, index) in wordArray" :key="index">
-                                    <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter : '' }}</span>
+                                    <span class="letter-placeholder">{{ guessedLetters.includes(letter) ? letter : ''
+                                    }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="keyboard-container text-center">
-                            <div v-for="(row, rowIndex) in keyboard" :key="rowIndex" class="row justify-content-center g-1">
+                            <div v-for="(row, rowIndex) in keyboard" :key="rowIndex"
+                                class="row justify-content-center g-1">
                                 <div class="col-auto" v-for="letter in row" :key="letter">
-                                    <button class="key-button" :class="{ 'correct': guessedLetters.includes(letter), 'incorrect': incorrectLetters.includes(letter) }"
+                                    <button class="key-button"
+                                        :class="{ 'correct': guessedLetters.includes(letter), 'incorrect': incorrectLetters.includes(letter) }"
                                         :disabled="selectedLetters.includes(letter)" @click="selectLetter(letter)">
                                         {{ letter }}
                                     </button>
@@ -108,6 +111,9 @@ const message = ref("");
 const difficultySelected = ref(false);
 const difficulty = ref("");
 const keyboard = ref(['QWERTYUIOP', 'ASDFGHJKLÑ', 'ZXCVBNM']);
+/*const score = ref(parseInt(sessionStorage.getItem('score')) || 0); // Inicializa la puntuación desde localStorage
+const masAlto = ref(parseInt(sessionStorage.getItem('highscore')) || 0);*/
+const user = JSON.parse(sessionStorage.getItem('authUser'));
 
 const difficultyText = computed(() => {
     return difficulty.value === 'FACIL' ? 'Fácil' : difficulty.value === 'MEDIO' ? 'Medio' : 'Difícil';
@@ -123,16 +129,28 @@ const LogOut = () => {
     router.push("/login");
 };
 
+/*const borrar = () => {
+    sessionStorage.removeItem('score');
+    score.value = 0;
+};
+
+const puntajeMasAlto = () => {
+    const currentHighScore = parseInt(sessionStorage.getItem('highscore')) || 0;
+    if (score.value > currentHighScore) {
+        sessionStorage.setItem('highscore', score.value);
+        masAlto.value = score.value; // Actualiza la referencia para reflejar el nuevo puntaje más alto
+    }
+};*/
+
 const isAdmin = computed(() => {
-  const user = JSON.parse(sessionStorage.getItem('authUser'));
-  return user && user.rol === 'ADMIN';
+    return user && user.rol === 'ADMIN';
 });
 
 const selectLetter = (letter) => {
     if (gameOver.value || selectedLetters.value.includes(letter)) return;
-    
+
     selectedLetters.value.push(letter.toUpperCase()); // Convertimos a mayúscula para uniformidad
-    
+
     if (wordArray.value.map(l => l.toUpperCase()).includes(letter.toUpperCase())) {
         guessedLetters.value.push(letter.toUpperCase());
     } else {
@@ -147,9 +165,51 @@ const checkGameStatus = () => {
     if (mistakes.value >= maxMistakes.value) {
         gameOver.value = true;
         message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
+        /*puntajeMasAlto();
+        borrar();*/
     } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter.toUpperCase()))) {
         gameOver.value = true;
         message.value = "Felicidades, ¡Ganaste!";
+        /*score.value += 100;
+        sessionStorage.setItem('score', score.value);
+        puntajeMasAlto();*/
+
+        // Asegúrate de que selectedWordObject tenga el id correcto
+        const selectedWordObject = words.value.find(word => word.word.trim().toUpperCase() === selectedWord.value);
+        
+        // Verifica que selectedWordObject y mistakes.value tengan valores válidos
+        if (selectedWordObject && mistakes.value !== undefined) {
+            saveScore(user.userId, selectedWordObject.id, mistakes.value, maxMistakes.value);  
+        } else {
+            console.error('Error: selectedWordObject o mistakes.value no son válidos');
+        }
+    }
+};
+
+const saveScore = async (id, palabraId, intentosUsados, maxIntentos) => {
+    try {
+        const response = await axios.post(`${import.meta.env.VITE_API_WORD}register`, {
+            userId: id,                        
+            wordId: palabraId,
+            attemptsMade: intentosUsados, // Asegúrate de que esto tenga un valor válido
+            maximumNumberAttempts: maxIntentos
+        }, {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('Puntaje guardado exitosamente:', response.data);
+    } catch (error) {
+        if (error.response) {
+            console.error('Error en la respuesta del servidor:', error.response.data);
+            console.error('Código de estado:', error.response.status);
+        } else if (error.request) {
+            console.error('No se recibió respuesta del servidor:', error.request);
+        } else {
+            console.error('Error al configurar la solicitud:', error.message);
+        }
     }
 };
 
@@ -215,7 +275,7 @@ const resetGame = () => {
     message.value = "";
 };
 
-onMounted(() => {});
+onMounted(() => { });
 </script>
 
 <style scoped>
@@ -236,7 +296,7 @@ dialog {
 }
 
 dialog p {
-    font-size: 18px;    
+    font-size: 18px;
     margin-bottom: 20px;
 }
 
@@ -255,12 +315,12 @@ dialog .btn:hover {
     background-color: #4cae4c;
 }
 
-.key-button.incorrect{
+.key-button.incorrect {
     background-color: #E74C3C !important;
     border: none;
 }
 
-.key-button.correct{
+.key-button.correct {
     background-color: #5cb85c !important;
     border: none;
 }

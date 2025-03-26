@@ -7,12 +7,13 @@
         </div>
         <div class="card-body p-0">
             <ul class="list-group list-group-flush">
-                <li v-for="(player, index) in players" :key="index" class="list-group-item d-flex justify-content-between align-items-center">
+                <li v-for="(player, index) in players" :key="index"
+                    class="list-group-item d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <span class="badge rounded-pill me-2 rank-badge" :class="getRankClass(index + 1)">{{ index + 1 }}</span>
-                        <span>{{ player.name }}</span>
+                        <span>{{ player.nombre }}</span>
+                        <span class="badge bg-primary rounded-pill ms-2">{{ player.totalPuntos }}</span>
                     </div>
-                    <span class="badge bg-primary rounded-pill">{{ player.score }}</span>
                 </li>
             </ul>
         </div>
@@ -20,29 +21,41 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     name: "Ranking",
     data() {
         return {
-            players: [
-                { name: "MVilla", score: 8500 },
-                { name: "MenchoSoy", score: 7200 },
-                { name: "BenitoJ", score: 6800 },
-                { name: "PalabraSecreta", score: 5400 },
-                { name: "AhorcadoMaster", score: 4900 },
-                { name: "SuperGamer", score: 3750 },
-                { name: "GanadorLetras", score: 3200 },
-                { name: "AdivinaTodo", score: 2900 },
-                { name: "MasterWord", score: 2500 },
-                { name: "SalvadoDelAhorcado", score: 2100 },
-                { name: "AdivinaRapido", score: 1800 },       
-            ]
+            players: []
         };
     },
     methods: {
         getRankClass(rank) {
             return rank <= 3 ? `rank-${rank}` : "out-rank";
+        },
+        async fetchPlayers() {
+            try {
+                const response = await axios.get(import.meta.env.VITE_API_WORD + 'rankingGeneral', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // Accede a la propiedad generalRanking
+                if (Array.isArray(response.data.generalRanking)) {
+                    this.players = response.data.generalRanking.sort((a, b) => b.totalPuntos - a.totalPuntos);
+                } else {
+                    console.error('La respuesta no contiene un array en generalRanking:', response.data);
+                }
+            } catch (error) {
+                console.error('Error fetching players:', error);
+            }
         }
+    },
+    mounted() {
+        this.fetchPlayers();
     }
 };
 </script>
@@ -51,18 +64,22 @@ export default {
 .card-header {
     background-color: #9BC53D !important;
 }
+
 .rank-1 {
     background-color: gold;
     color: black;
 }
+
 .rank-2 {
     background-color: silver;
     color: black;
 }
+
 .rank-3 {
     background-color: #cd7f32; /* Bronce */
     color: black;
 }
+
 .out-rank {
     background-color: gray;
     color: white;

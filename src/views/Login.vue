@@ -88,7 +88,8 @@ export default {
                 // Paso 3: Manejar la respuesta
                 if (response.status === 200) {
                     sessionStorage.setItem('authToken', response.data.token);
-                    sessionStorage.setItem('authUser', JSON.stringify(response.data.user));                    
+                    sessionStorage.setItem('authUser', JSON.stringify(response.data.user));    
+                    console.log(sessionStorage.getItem('authUser'));
                     this.$router.push("/game");
                 } else {
                     throw new Error(response.data);
