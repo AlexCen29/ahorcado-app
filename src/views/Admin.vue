@@ -213,7 +213,7 @@ export default {
   },
   methods: {
     isValidWord(word) {
-      const regex = /^[a-zA-ZñÑ]+$/;
+      const regex = /^[a-zA-ZñÑáéíóúÁÉÍÓÚ]+$/;
       return regex.test(word);
     },
     showModal(editando) {
@@ -250,7 +250,7 @@ export default {
           Swal.fire({
             icon: 'warning',
             title: 'Palabra inválida',
-            text: 'Solo se permiten letras sin espacios, sin acentos ni caracteres especiales.',
+            text: 'Solo se permiten letras sin espacios ni caracteres especiales.',
             confirmButtonColor: '#E55934',
           });
           this.isLoading = false;
@@ -273,7 +273,7 @@ export default {
         const errorMessage = error.response?.data?.error || '¡Error al crear la palabra!';
         Swal.fire({
           icon: 'error',
-          title: 'Error11',
+          title: 'Error',
           text: errorMessage,
           confirmButtonColor: '#E55934',
         });

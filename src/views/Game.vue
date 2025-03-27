@@ -281,7 +281,7 @@ const resetGame = () => {
     }
 
     const selectedWordObject = words.value[Math.floor(Math.random() * words.value.length)];
-    selectedWord.value = selectedWordObject.word.trim().toUpperCase(); // Normalizamos la palabra
+    selectedWord.value = selectedWordObject.word.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normalizamos la palabra
     wordArray.value = selectedWord.value.split(""); // Convertimos en array correctamente
 
     guessedLetters.value = [];
