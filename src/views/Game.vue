@@ -137,8 +137,11 @@ const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.
 
 const Config = () => router.push("/admin");
 const LogOut = () => {
-    sessionStorage.removeItem('authToken');
-    router.push("/login");
+    let valor = confirm("¿Cerrar sesión?");
+    if (valor) {
+        sessionStorage.removeItem('authToken');
+        router.push("/login");
+    }
 };
 
 /*const borrar = () => {
