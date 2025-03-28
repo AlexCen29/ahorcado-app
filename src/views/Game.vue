@@ -129,11 +129,11 @@ const masAlto = ref(parseInt(sessionStorage.getItem('highscore')) || 0);*/
 const user = JSON.parse(sessionStorage.getItem('authUser'));
 
 const guestWords = [
-    { word: 'PROGRAMAR' },
-    { word: 'JAVASCRIPT' },
-    { word: 'VUEJS' },
+    { word: 'GRATIS' },
+    { word: 'MANGO' },
+    { word: 'INICIAR' },
     { word: 'AHORCADO' },
-    { word: 'CODIGO' }
+    { word: 'SESION' }
 ];
 
 const difficultyText = computed(() => {

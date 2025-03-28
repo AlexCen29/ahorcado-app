@@ -20,7 +20,7 @@ const router = createRouter({
   routes
 })
 
-//protección de rutas
+//proteccion de rutas
 router.beforeEach((to, from, next) => {
   const token = sessionStorage.getItem('authToken');
   const user = JSON.parse(sessionStorage.getItem('authUser'));
@@ -34,8 +34,11 @@ router.beforeEach((to, from, next) => {
       next();
     } 
   } else if (to.matched.some(record => record.meta.isGuest)) {
-    next();
-    
+    if (token && user) {
+      next('/game'); //redirige a /game si ya est autenticado
+    } else {
+      next(); //permite acceso si no esta autenticado
+    }
   } else {
     if ((to.path === '/login' || to.path === '/register') && token) {
       next('/game');
