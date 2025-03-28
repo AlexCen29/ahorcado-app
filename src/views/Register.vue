@@ -14,8 +14,8 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-person-circle"></i>
                                     </span>
-                                    <input :disabled="isLoading" v-model="username" type="text" class="form-control" id="newUsername"
-                                        placeholder="Elige un nombre de usuario" required>
+                                    <input :disabled="isLoading" v-model="username" type="text" class="form-control"
+                                        id="newUsername" placeholder="Elige un nombre de usuario" required>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -24,8 +24,8 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-envelope-fill"></i>
                                     </span>
-                                    <input :disabled="isLoading" v-model="email" type="email" class="form-control" id="email"
-                                        placeholder="tu@correo.com" required>
+                                    <input :disabled="isLoading" v-model="email" type="email" class="form-control"
+                                        id="email" placeholder="tu@correo.com" required>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -34,8 +34,14 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                    <input :disabled="isLoading" v-model="password" type="password" class="form-control" id="newPassword"
-                                        placeholder="Crea una contraseña" required>
+                                    <input :disabled="isLoading" v-model="password"
+                                        :type="showPassword ? 'text' : 'password'" class="form-control" id="newPassword"
+                                        placeholder="Crea una contraseña" required minlength="6"
+                                        title="La contraseña debe tener al menos 6 caracteres" />
+                                    <button type="button" class="btn btn-secondary"
+                                        @click="togglePasswordVisibility">
+                                        <i :class="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+                                    </button>
                                 </div>
                             </div>
 
@@ -71,6 +77,7 @@ export default {
             //variables de estado
             isLoading: false,
             errorMessage: '',
+            showPassword: false,
             //datos del formulario
             username: '',
             email: '',
@@ -115,12 +122,16 @@ export default {
                     text: errorMessage,
                     confirmButtonColor: '#E55934',
                 });
-            }  finally {
+            } finally {
                 this.isLoading = false;
             }
             console.log("Datos de registro:", this.form);
 
         },
+
+        togglePasswordVisibility() {
+        this.showPassword = !this.showPassword;
+    }
     }
 }
 </script>
@@ -173,5 +184,13 @@ input::placeholder {
 label {
 
     font-weight: bold;
+}
+
+.btn-secondary {
+
+    background-color: #FA7921 !important;
+    border-color: #FA7921 !important;
+    transition: all 0.3s ease;
+
 }
 </style>

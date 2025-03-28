@@ -24,8 +24,19 @@
                                     <span class="input-group-text bg-light">
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
-                                    <input :disabled="isLoading" v-model="password" type="password" class="form-control" id="password"
-                                        placeholder="Tu contraseña" required>
+                                    <input 
+                                        :disabled="isLoading" 
+                                        v-model="password" 
+                                        :type="showPassword ? 'text' : 'password'" 
+                                        class="form-control" 
+                                        id="password" 
+                                        placeholder="Tu contraseña" 
+                                        required
+                                    />
+                                    <button type="button" class="btn btn-secondary"
+                                        @click="togglePasswordVisibility">
+                                        <i :class="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="d-grid gap-2">
@@ -69,6 +80,7 @@ export default {
         return {
             //variable globales
             isLoading: false,
+            showPassword: false,
             //variables para el formulario de inicio de sesión
             email: '',
             password: ''
@@ -120,6 +132,10 @@ export default {
 
         enterAsGuest() {
         this.$router.push('/guest');
+    },
+
+    togglePasswordVisibility() {
+        this.showPassword = !this.showPassword;
     }
     }
 }
@@ -173,5 +189,13 @@ input::placeholder {
 label {
     
     font-weight: bold;
+}
+
+.btn-secondary {
+
+background-color: #FA7921 !important;
+border-color: #FA7921 !important;
+transition: all 0.3s ease;
+
 }
 </style>
