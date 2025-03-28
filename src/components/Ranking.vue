@@ -7,7 +7,7 @@
         </div>
         <div class="card-body p-0">
             <div v-if="isGuest" class="text-center p-4">
-                <p class="text-muted">Inicia sesión para ver el ranking, participar en el ranking y poder elegir dificultad.</p>
+                <p class="text-muted">Inicia sesión para desbloquear niveles, acceder al ranking y competir por el primer lugar.</p>
             </div>
             <ul v-else class="list-group list-group-flush">
                 <li v-for="(player, index) in players" :key="index"
