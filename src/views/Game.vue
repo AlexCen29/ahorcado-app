@@ -12,7 +12,7 @@
                     <span v-if="difficultySelected" class="difficulty-badge" :class="difficultyClass">
                         {{ difficultyText }}
                     </span>
-                    <button v-if="isAdmin" class="btn btn-settings ms-2" @click="Config">
+                    <button v-if="isAdmin && !isGuest" class="btn btn-settings ms-2" @click="Config">
                         <i class="bi bi-gear-fill me-2"></i>Ajustes
                     </button>
                 </div>
@@ -23,7 +23,7 @@
     <section class="container-fluid py-4">
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <div v-if="!difficultySelected" class="card shadow-lg difficulty-selector">
+                <div v-if="!isGuest && !difficultySelected" class="card shadow-lg difficulty-selector">
                     <div class="card-body text-center">
                         <h2 class="card-title mb-4">Selecciona la Dificultad</h2>
                         <p class="mb-4">Elige el nivel de dificultad para comenzar el juego</p>
@@ -59,8 +59,7 @@
                                 <dialog open>
                                     <p>{{ message }}</p>
                                     <button class="btn btn-primary mt-2" @click="resetGame">Reiniciar Juego</button>
-                                    <button class="btn btn-secondary mt-2" @click="resetDifficulty">Cambiar
-                                        Dificultad</button>
+                                    <button v-if="!isGuest" class="btn btn-secondary mt-2" @click="resetDifficulty">Cambiar Dificultad</button>
                                 </dialog>
                             </div>
                             <div class="word-container text-center mb-5">
@@ -94,7 +93,7 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <Ranking ref="rankingComponent" />
+                <Ranking ref="rankingComponent" :isGuest="isGuest" />
             </div>
         </div>
     </section>
@@ -106,6 +105,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const isLoadingWords = ref(false);
 const rankingComponent = ref(null);
@@ -123,9 +123,18 @@ const message = ref("");
 const difficultySelected = ref(false);
 const difficulty = ref("");
 const keyboard = ref(['QWERTYUIOP', 'ASDFGHJKLÑ', 'ZXCVBNM']);
+const isGuest = computed(() => router.currentRoute.value.meta.isGuest);
 /*const score = ref(parseInt(sessionStorage.getItem('score')) || 0); // Inicializa la puntuación desde localStorage
 const masAlto = ref(parseInt(sessionStorage.getItem('highscore')) || 0);*/
 const user = JSON.parse(sessionStorage.getItem('authUser'));
+
+const guestWords = [
+    { word: 'PROGRAMAR' },
+    { word: 'JAVASCRIPT' },
+    { word: 'VUEJS' },
+    { word: 'AHORCADO' },
+    { word: 'CODIGO' }
+];
 
 const difficultyText = computed(() => {
     return difficulty.value === 'FACIL' ? 'Fácil' : difficulty.value === 'MEDIO' ? 'Medio' : 'Difícil';
@@ -137,13 +146,29 @@ const hangmanImage = computed(() => new URL(`/src/assets/img/ahorcado${mistakes.
 
 const Config = () => router.push("/admin");
 const LogOut = () => {
-    let valor = confirm("¿Cerrar sesión?");
-    if (valor) {
-        sessionStorage.removeItem('authToken');
-        router.push("/login");
-    }
+    const title = isGuest.value ? '¿Salir del modo invitado?' : '¿Cerrar sesión?';
+    const text = isGuest.value 
+        ? 'Estás a punto de salir del modo invitado.' 
+        : 'Estás a punto de cerrar sesión.';
+    
+    Swal.fire({
+        title: title,
+        text: text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: isGuest.value ? 'Sí, salir' : 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (!isGuest.value) {
+                sessionStorage.removeItem('authToken');
+            }
+            router.push("/login");
+        }
+    });
 };
-
 /*const borrar = () => {
     sessionStorage.removeItem('score');
     score.value = 0;
@@ -180,23 +205,17 @@ const checkGameStatus = () => {
     if (mistakes.value >= maxMistakes.value) {
         gameOver.value = true;
         message.value = `¡Perdiste! La palabra era "${selectedWord.value}"`;
-        /*puntajeMasAlto();
-        borrar();*/
     } else if (wordArray.value.every(letter => guessedLetters.value.includes(letter.toUpperCase()))) {
         gameOver.value = true;
         message.value = "Felicidades, ¡Ganaste!";
-        /*score.value += 100;
-        sessionStorage.setItem('score', score.value);
-        puntajeMasAlto();*/
 
-        // Asegúrate de que selectedWordObject tenga el id correcto
-        const selectedWordObject = words.value.find(word => word.word.trim().toUpperCase() === selectedWord.value);
-
-        // Verifica que selectedWordObject y mistakes.value tengan valores válidos
-        if (selectedWordObject && mistakes.value !== undefined) {
-            saveScore(user.userId, selectedWordObject.id, mistakes.value, maxMistakes.value);
-        } else {
-            console.error('Error: selectedWordObject o mistakes.value no son válidos');
+        if (!isGuest.value) {
+            const selectedWordObject = words.value.find(word => word.word.trim().toUpperCase() === selectedWord.value);
+            if (selectedWordObject && mistakes.value !== undefined) {
+                saveScore(user.userId, selectedWordObject.id, mistakes.value, maxMistakes.value);
+            } else {
+                console.error('Error: selectedWordObject o mistakes.value no son válidos');
+            }
         }
     }
 };
@@ -230,9 +249,14 @@ const saveScore = async (id, palabraId, intentosUsados, maxIntentos) => {
 };
 
 const selectDifficulty = async (level) => {
+    if (isGuest.value) {
+        resetGame(); // Llama directamente a resetGame para el modo invitado
+        return;
+    }
+
     difficulty.value = level;
     difficultySelected.value = true;
-    await fetcheo(level);
+    await fetcheo(level); // Recupera palabras de la base de datos si no es invitado
     if (words.value && words.value.length > 0) {
         resetGame();
     } else {
@@ -278,14 +302,16 @@ const fetcheo = async (dificultad) => {
 };
 
 const resetGame = () => {
-    if (!words.value || words.value.length === 0) {
-        console.error('No se encontraron palabras para la dificultad seleccionada.');
+    const wordSource = isGuest.value ? guestWords : words.value; // Selecciona las palabras según el modo
+
+    if (!wordSource || wordSource.length === 0) {
+        console.error('No se encontraron palabras.');
         return;
     }
 
-    const selectedWordObject = words.value[Math.floor(Math.random() * words.value.length)];
-    selectedWord.value = selectedWordObject.word.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normalizamos la palabra
-    wordArray.value = selectedWord.value.split(""); // Convertimos en array correctamente
+    const selectedWordObject = wordSource[Math.floor(Math.random() * wordSource.length)]; // Selecciona una palabra aleatoria
+    selectedWord.value = selectedWordObject.word.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Normaliza y elimina acentos
+    wordArray.value = selectedWord.value.split(""); // Convierte la palabra en un array de letras
 
     guessedLetters.value = [];
     selectedLetters.value = [];
@@ -300,7 +326,11 @@ const resetDifficulty = () => {
     resetGame();
 };
 
-onMounted(() => { });
+onMounted(() => {
+    if (isGuest.value) {
+        resetGame(); // Inicia el juego automáticamente en modo invitado
+    }
+});
 </script>
 
 <style scoped>

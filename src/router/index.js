@@ -12,6 +12,7 @@ const routes = [
   { path: '/admin', component: Admin, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/user', component: User, meta: { requiresAuth: true } },
   { path: '/game', component: Game, meta: { requiresAuth: true } },
+  { path: '/guest', component: Game, meta: { isGuest: true } },
 ]
 
 const router = createRouter({
@@ -31,7 +32,10 @@ router.beforeEach((to, from, next) => {
       next('/game'); //redirige si no es admin
     } else {
       next();
-    }
+    } 
+  } else if (to.matched.some(record => record.meta.isGuest)) {
+    next();
+    
   } else {
     if ((to.path === '/login' || to.path === '/register') && token) {
       next('/game');

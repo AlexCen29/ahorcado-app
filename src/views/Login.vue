@@ -43,6 +43,13 @@
                                 </router-link>
                             </p>
                         </div>
+                                                <div class="text-center">
+                            <p class="mb-0">¿No quieres registrarte?
+                                <button @click="enterAsGuest" class="btn btn-link text-decoration-none fw-bold" style="color: #E55934;">
+                                    Entrar como invitado
+                                </button>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,6 +117,10 @@ export default {
             console.log("Datos de registro:", this.form);
 
         },
+
+        enterAsGuest() {
+        this.$router.push('/guest');
+    }
     }
 }
 </script>

@@ -6,7 +6,10 @@
             </h3>
         </div>
         <div class="card-body p-0">
-            <ul class="list-group list-group-flush">
+            <div v-if="isGuest" class="text-center p-4">
+                <p class="text-muted">Inicia sesión para ver el ranking, participar en el ranking y poder elegir dificultad.</p>
+            </div>
+            <ul v-else class="list-group list-group-flush">
                 <li v-for="(player, index) in players" :key="index"
                     class="list-group-item d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -25,6 +28,12 @@ import axios from 'axios';
 
 export default {
     name: "Ranking",
+    props: {
+        isGuest: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
             players: []
@@ -35,6 +44,7 @@ export default {
             return rank <= 3 ? `rank-${rank}` : "out-rank";
         },
         async fetchPlayers() {
+            if (this.isGuest) return;
             try {
                 const response = await axios.get(import.meta.env.VITE_API_WORD + 'rankingGeneral', {
                     headers: {
