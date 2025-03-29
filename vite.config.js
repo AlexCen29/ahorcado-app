@@ -10,6 +10,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),    
   ],  
+  base: 'https://AlexCen29.github.io/ahorcado-app/', // Cambia la URL base a la de jsdelivr
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
